@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://tu-dominio.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow important pages
+Allow: /
+Allow: /vinos/
+Allow: /categoria/
+Allow: /bodega/ 

@@ -1,0 +1,54 @@
+{
+  "name": "Los Vinos - Tienda Online de Vinos",
+  "short_name": "Los Vinos",
+  "description": "Descubre los mejores vinos internacionales en nuestra tienda online",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#722f37",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "categories": ["food", "shopping"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+} 
