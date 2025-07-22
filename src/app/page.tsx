@@ -1,5 +1,7 @@
 import { Metadata } from "next"
-import WineStore from "@/components/wine-store"
+import { WineService } from "@/lib/services/wine-service"
+import WineStore from "@/components/store/wine-store"
+import { ConsumiblesRealtimeProvider } from "@/hooks/use-consumibles";
 
 export const metadata: Metadata = {
   title: "Los Vinos - Tienda Online de Vinos Internacionales",
@@ -13,18 +15,18 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://tu-dominio.com'),
+  metadataBase: new URL('https://wines-theta.vercel.app'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: "Los Vinos - Tienda Online de Vinos Internacionales",
     description: "Descubre los mejores vinos internacionales en nuestra tienda online. Vinos tintos, blancos y rosados de las mejores bodegas del mundo.",
-    url: 'https://tu-dominio.com',
+    url: 'https://wines-theta.vercel.app',
     siteName: 'Los Vinos',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/logo.svg',
         width: 1200,
         height: 630,
         alt: 'Los Vinos - Tienda Online de Vinos',
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "Los Vinos - Tienda Online de Vinos Internacionales",
     description: "Descubre los mejores vinos internacionales en nuestra tienda online.",
-    images: ['/og-image.jpg'],
+    images: ['/logo.svg'],
   },
   robots: {
     index: true,
@@ -52,10 +54,21 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const wines = await WineService.getAllWines();
   return (
     <main className="min-h-screen">
-      <WineStore />
+      {Array.isArray(wines) ? (
+        <ConsumiblesRealtimeProvider>
+          <WineStore wines={wines} />
+        </ConsumiblesRealtimeProvider>
+      ) : (
+        <div className="text-center py-10 text-red-600">
+          Error al cargar los vinos. Por favor, inténtalo de nuevo más tarde.
+        </div>
+      )}
     </main>
   )
 }

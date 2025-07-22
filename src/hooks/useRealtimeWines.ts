@@ -23,6 +23,7 @@ export function useWineRealtime(
   const [error, setError] = useState<Error | null>(null)
   const channelRef = useRef<any>(null)
   const retryTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const isSubscribedRef = useRef(false)
 
   // Función para cargar vinos iniciales
   const loadWines = useCallback(async () => {
@@ -30,31 +31,55 @@ export function useWineRealtime(
       setIsLoading(true)
       setError(null)
       
+      // Loading wines from Supabase...
+      
       const { data, error: fetchError } = await supabase
         .from("wines")
         .select(`
           *,
           wine_details (*)
         `)
-        .order("nombre")
+        .order("bodega", { referencedTable: 'wine_details', ascending: true })
+        .order("nombre", { ascending: true })
+        .order("variedades", { ascending: true })
+        .order("capacidad", { ascending: false })
 
       if (fetchError) {
-        throw fetchError
+        console.error('Supabase fetch error:', fetchError)
+        throw new Error(`Error fetching wines: ${fetchError.message || 'Unknown error'}`)
       }
 
-      console.log('Raw wines data from Supabase:', data)
+              // Raw wines data from Supabase
       
-       const normalizedWines = (data || []).map((wine) => ({
+      if (!data) {
+        console.warn('No data returned from Supabase')
+        setWines([])
+        return
+      }
+      
+      const normalizedWines = data.map((wine) => ({
         ...wine,
         wine_details: Array.isArray(wine.wine_details)
           ? wine.wine_details[0]
           : wine.wine_details
       }))
 
+              // Normalized wines
       setWines(normalizedWines)
     } catch (err) {
-      const error = err as Error
-      console.error('Error loading wines:', error)
+      console.error('Error loading wines:', err)
+      
+      // Crear un error más informativo
+      let errorMessage = 'Error loading wines'
+      if (err instanceof Error) {
+        errorMessage = err.message
+      } else if (typeof err === 'string') {
+        errorMessage = err
+      } else if (err && typeof err === 'object') {
+        errorMessage = JSON.stringify(err)
+      }
+      
+      const error = new Error(errorMessage)
       setError(error)
       onError?.(error)
     } finally {
@@ -94,12 +119,13 @@ export function useWineRealtime(
     try {
       // Limpiar canal anterior si existe
       if (channelRef.current) {
-        console.log('Removing previous channel')
+        // Removing previous channel
         supabase.removeChannel(channelRef.current)
         channelRef.current = null
+        isSubscribedRef.current = false
       }
 
-      console.log(`Setting up wine realtime channel (attempt ${retryCount + 1})`)
+              // Setting up wine realtime channel
       
       channelRef.current = supabase
         .channel(`wines_changes_${Date.now()}`) // Nombre único para evitar conflictos
@@ -111,55 +137,99 @@ export function useWineRealtime(
             table: "wines",
           },
           (payload) => {
-            console.log('Wine realtime event:', payload.eventType, payload)
-            
-            // Normalizar wine_details
-            const normalizeWine = (wineData: any): Wine => {
-              const normalizedWine = {
-                ...wineData,
-                wine_details: Array.isArray(wineData.wine_details)
-                  ? wineData.wine_details[0] || {}
-                  : (wineData.wine_details || {}),
+            try {
+              // Wine realtime event
+              
+              // Normalizar wine_details
+              const normalizeWine = (wineData: any): Wine => {
+                const normalizedWine = {
+                  ...wineData,
+                  wine_details: Array.isArray(wineData.wine_details)
+                    ? wineData.wine_details[0] || {}
+                    : (wineData.wine_details || {}),
+                }
+                // Normalized wine in realtime
+                return normalizedWine
               }
-              console.log('Normalized wine in realtime:', normalizedWine)
-              return normalizedWine
-            }
 
-            switch (payload.eventType) {
-              case "INSERT":
-                const newWine = normalizeWine(payload.new)
-                handleUpdate({
-                  type: 'INSERT',
-                  wine: newWine
-                })
-                break
+              switch (payload.eventType) {
+                case "INSERT":
+                  const newWine = normalizeWine(payload.new)
+                  handleUpdate({
+                    type: 'INSERT',
+                    wine: newWine
+                  })
+                  break
 
-              case "UPDATE":
-                const updatedWine = normalizeWine(payload.new)
-                handleUpdate({
-                  type: 'UPDATE',
-                  wine: updatedWine
-                })
-                break
+                case "UPDATE":
+                  // Para actualizaciones, necesitamos obtener los datos completos incluyendo wine_details
+                  const fetchUpdatedWine = async () => {
+                    try {
+                      const { data: updatedWineData, error: fetchError } = await supabase
+                        .from("wines")
+                        .select(`
+                          *,
+                          wine_details (*)
+                        `)
+                        .eq('id_vino', payload.new.id_vino)
+                        .single()
 
-              case "DELETE":
-                const deletedWine = normalizeWine(payload.old)
-                handleUpdate({
-                  type: 'DELETE',
-                  wine: deletedWine
-                })
-                break
+                      if (fetchError) {
+                        console.error('Error fetching updated wine:', fetchError)
+                        // Fallback: usar los datos del payload
+                        const updatedWine = normalizeWine(payload.new)
+                        handleUpdate({
+                          type: 'UPDATE',
+                          wine: updatedWine
+                        })
+                      } else {
+                        const normalizedUpdatedWine = {
+                          ...updatedWineData,
+                          wine_details: Array.isArray(updatedWineData.wine_details)
+                            ? updatedWineData.wine_details[0]
+                            : updatedWineData.wine_details
+                        }
+                        handleUpdate({
+                          type: 'UPDATE',
+                          wine: normalizedUpdatedWine
+                        })
+                      }
+                    } catch (err) {
+                      console.error('Error in fetchUpdatedWine:', err)
+                      // Fallback: usar los datos del payload
+                      const updatedWine = normalizeWine(payload.new)
+                      handleUpdate({
+                        type: 'UPDATE',
+                        wine: updatedWine
+                      })
+                    }
+                  }
+                  
+                  fetchUpdatedWine()
+                  break
 
-              default:
-                console.warn('Unknown wine realtime event type:', (payload as any).eventType)
+                case "DELETE":
+                  const deletedWine = normalizeWine(payload.old)
+                  handleUpdate({
+                    type: 'DELETE',
+                    wine: deletedWine
+                  })
+                  break
+
+                default:
+                  console.warn('Unknown wine realtime event type:', (payload as any).eventType)
+              }
+            } catch (err) {
+              // Capturar errores en el callback del canal sin propagarlos
+              console.warn('Error processing wine realtime event:', err)
             }
           }
         )
         .subscribe((status) => {
-          console.log('Wine realtime subscription status:', status)
+          // Wine realtime subscription status
           
           if (status === 'CHANNEL_ERROR') {
-            console.error('Wine realtime channel error - attempting retry')
+            console.warn('Wine realtime channel error - attempting retry')
             const error = new Error(`Failed to subscribe to wine changes (attempt ${retryCount + 1})`)
             setError(error)
             onError?.(error)
@@ -171,12 +241,16 @@ export function useWineRealtime(
               }, 5000)
             }
           } else if (status === 'SUBSCRIBED') {
-            console.log('Wine realtime channel subscribed successfully')
+            // Wine realtime channel subscribed successfully
             setError(null) // Limpiar errores anteriores si la suscripción es exitosa
+            isSubscribedRef.current = true
+          } else if (status === 'CLOSED') {
+            // Wine realtime channel closed
+            isSubscribedRef.current = false
           }
         })
 
-        console.log(channelRef.current)
+        // Channel reference
 
     } catch (err) {
       const error = err as Error
@@ -207,9 +281,10 @@ export function useWineRealtime(
       
       // Limpiar canal
       if (channelRef.current) {
-        console.log('Cleaning up wine realtime channel')
+        // Cleaning up wine realtime channel
         supabase.removeChannel(channelRef.current)
         channelRef.current = null
+        isSubscribedRef.current = false
       }
     }
   }, [loadWines, setupChannel])

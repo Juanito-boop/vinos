@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import type { Wine, FilterState } from "@/types"
-import { updateURLWithData, getDataFromURL } from "@/lib/utils"
+import { updateURLWithData, getDataFromURL, encryptData } from "@/lib/utils"
 
 export function useFilters(wines: Wine[]) {
   const [filters, setFilters] = useState<FilterState>({
@@ -31,13 +31,6 @@ export function useFilters(wines: Wine[]) {
     isInitialized.current = true
   }, [])
 
-  // Actualizar URL cuando cambien los filtros (después del renderizado)
-  useEffect(() => {
-    if (isInitialized.current) {
-      updateURLWithData(filters, 'filters')
-    }
-  }, [filters])
-
   // Calcular rangos de precio
   const priceRange = useMemo(() => {
     if (wines.length === 0) return { min: 0, max: 0 }
@@ -48,6 +41,21 @@ export function useFilters(wines: Wine[]) {
     
     return { min, max }
   }, [wines])
+
+  // Actualizar URL cuando cambien los filtros (después del renderizado)
+  useEffect(() => {
+    if (isInitialized.current) {
+      // Usar encryptData directamente para pasar el rango dinámico
+      const encrypted = encryptData(filters, priceRange)
+      const url = new URL(window.location.href)
+      if (encrypted) {
+        url.searchParams.set('filters', encrypted)
+      } else {
+        url.searchParams.delete('filters')
+      }
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [filters, priceRange])
 
   // Inicializar rango de precio cuando se cargan los vinos
   useEffect(() => {
@@ -60,13 +68,24 @@ export function useFilters(wines: Wine[]) {
   }, [priceRange, filters.priceRange])
 
   const variedades = useMemo(() => {
-    const allVariedades = wines.flatMap((wine) => wine.variedades)
-    return [...new Set(allVariedades)]
+    // Mapa para mantener el valor original pero evitar duplicados por minúsculas/espacios
+    const map = new Map<string, string>()
+    wines.flatMap((wine) => wine.variedades).forEach((v) => {
+      const key = v.trim().toLowerCase()
+      if (!map.has(key)) map.set(key, v.trim())
+    })
+    return Array.from(map.values())
   }, [wines])
 
-  const bodegas = useMemo(() => [...new Set(wines.map((wine) => wine.wine_details.bodega))], [wines])
-  const paises = useMemo(() => [...new Set(wines.map((wine) => wine.pais_importacion))], [wines])
-  const colores = useMemo(() => [...new Set(wines.map((wine) => wine.color_vino))], [wines])
+  // Mapa auxiliar para normalizar y mapear variedad a su key
+  const variedadKeyMap = useMemo(() => {
+    const map = new Map<string, string>()
+    wines.flatMap((wine) => wine.variedades).forEach((v) => {
+      const key = v.trim().toLowerCase()
+      if (!map.has(key)) map.set(map.size.toString(), key)
+    })
+    return map
+  }, [wines])
 
   const filteredWines = useMemo(() => {
     return wines.filter((wine) => {
@@ -128,7 +147,8 @@ export function useFilters(wines: Wine[]) {
     const relevantWines = getFilteredCountsForCategory("variedades")
     relevantWines.forEach((wine) => {
       wine.variedades.forEach((variedad) => {
-        counts[variedad] = (counts[variedad] || 0) + 1
+        const key = variedad.trim().toLowerCase()
+        counts[key] = (counts[key] || 0) + 1
       })
     })
     return counts
@@ -221,6 +241,10 @@ export function useFilters(wines: Wine[]) {
     filters.selectedColores.length > 0 ||
     filters.priceRange.min !== priceRange.min ||
     filters.priceRange.max !== priceRange.max
+
+  const bodegas = useMemo(() => [...new Set(wines.map((wine) => wine.wine_details.bodega))], [wines])
+  const paises = useMemo(() => [...new Set(wines.map((wine) => wine.pais_importacion))], [wines])
+  const colores = useMemo(() => [...new Set(wines.map((wine) => wine.color_vino))], [wines])
 
   return {
     filters,

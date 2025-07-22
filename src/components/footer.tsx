@@ -1,6 +1,4 @@
-"use client"
-
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin, Wine } from "lucide-react"
+import { Instagram, Mail, Phone, MapPin, Wine } from "lucide-react"
 import WineLogo from "./wine-logo"
 
 export function Footer() {
@@ -8,46 +6,28 @@ export function Footer() {
 
   const socialLinks = [
     {
-      name: "Facebook",
-      icon: Facebook,
-      href: "https://facebook.com/losvinos",
-      color: "hover:text-blue-600"
-    },
-    {
       name: "Instagram", 
       icon: Instagram,
-      href: "https://instagram.com/losvinos",
+      href: "https://www.instagram.com/losvinosvilladeleyva?igsh=amY1bzh5N2xkbHg1",
       color: "hover:text-pink-600"
-    },
-    {
-      name: "Twitter",
-      icon: Twitter,
-      href: "https://twitter.com/losvinos",
-      color: "hover:text-blue-400"
-    },
-    {
-      name: "YouTube",
-      icon: Youtube,
-      href: "https://youtube.com/losvinos",
-      color: "hover:text-red-600"
     }
   ]
 
   const contactInfo = [
     {
       icon: Phone,
-      text: "+56 9 1234 5678",
-      href: "tel:+56912345678"
+      text: "+57 321 908 5857",
+      href: "tel:+573219085857"
     },
     {
       icon: Mail,
-      text: "info@losvinos.cl",
-      href: "mailto:info@losvinos.cl"
+      text: "ventas@vinosdelavilla.com",
+      href: "mailto:ventas@vinosdelavilla.com"
     },
     {
       icon: MapPin,
-      text: "Av. Providencia 1234, Santiago",
-      href: "https://maps.google.com"
+      text: "Cra. 9 #11-47, Villa de Leyva, Boyacá",
+      href: "https://maps.google.com/maps/place/LOS+VINOS+WINE+BAR/@5.6328072,-73.5239815,21z/data=!4m6!3m5!1s0x8e41d7122d492603:0x7667f05f2e9e45ea!8m2!3d5.6328438!4d-73.5240519!16s%2Fg%2F11gfls7d7m?entry=ttu&g_ep=EgoyMDI1MDcwNi4wIKXMDSoASAFQAw%3D%3D"
     }
   ]
 
@@ -57,7 +37,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           
           {/* Logo y descripción */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <WineLogo className="size-10" />
               <div>
@@ -73,40 +53,8 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-2 text-red-200">
               <Wine className="h-4 w-4" />
-              <span className="text-sm">Desde 2010</span>
+              <span className="text-sm">Desde 2018</span>
             </div>
-          </div>
-
-          {/* Enlaces rápidos */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4 text-white">Enlaces Rápidos</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-red-100 hover:text-white transition-colors text-sm">
-                  Catálogo de Vinos
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-red-100 hover:text-white transition-colors text-sm">
-                  Ofertas Especiales
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-red-100 hover:text-white transition-colors text-sm">
-                  Guía de Vinos
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-red-100 hover:text-white transition-colors text-sm">
-                  Eventos y Catas
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-red-100 hover:text-white transition-colors text-sm">
-                  Blog del Sommelier
-                </a>
-              </li>
-            </ul>
           </div>
 
           {/* Información de contacto */}
@@ -117,6 +65,8 @@ export function Footer() {
                 <li key={index}>
                   <a 
                     href={contact.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-3 text-red-100 hover:text-white transition-colors text-sm"
                   >
                     <contact.icon className="h-4 w-4 flex-shrink-0" />

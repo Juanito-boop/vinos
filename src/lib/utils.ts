@@ -9,35 +9,32 @@ export function cn(...inputs: ClassValue[]) {
 const ENCRYPTION_KEY = "wine-store-secret-key-2024"
 
 // Función para validar datos antes de encriptar
-function isValidData(data: any): boolean {
-  if (data === null || data === undefined) return false
-  if (Array.isArray(data)) return data.length > 0
+function isValidData(data: any, defaultPriceRange: { min: number, max: number } = { min: 0, max: 0 }): boolean {
+  if (data === null || data === undefined) return false;
+  if (Array.isArray(data)) return data.length > 0;
   if (typeof data === 'object') {
-    // Para filtros, verificar que al menos una propiedad tenga datos significativos
-    if (data.selectedVariedades || data.selectedBodegas || data.selectedPaises || data.selectedColores) {
-      const hasActiveFilters = 
-        (data.selectedVariedades && data.selectedVariedades.length > 0) ||
-        (data.selectedBodegas && data.selectedBodegas.length > 0) ||
-        (data.selectedPaises && data.selectedPaises.length > 0) ||
-        (data.selectedColores && data.selectedColores.length > 0)
-      
-      // Solo considerar válido si hay filtros activos (no solo el rango de precio por defecto)
-      return hasActiveFilters
-    }
-    
-    // Para otros objetos, verificar que al menos una propiedad tenga datos
-    const hasData = Object.values(data).some(value => 
-      Array.isArray(value) ? value.length > 0 : Boolean(value)
-    )
-    return hasData
+    // Considerar filtros
+    const hasActiveFilters =
+      (data.selectedVariedades && data.selectedVariedades.length > 0) ||
+      (data.selectedBodegas && data.selectedBodegas.length > 0) ||
+      (data.selectedPaises && data.selectedPaises.length > 0) ||
+      (data.selectedColores && data.selectedColores.length > 0);
+
+    // Considerar rango de precios distinto al valor por defecto
+    const hasCustomPriceRange =
+      data.priceRange && typeof data.priceRange === 'object' &&
+      (data.priceRange.min !== defaultPriceRange.min ||
+        data.priceRange.max !== defaultPriceRange.max);
+
+    return hasActiveFilters || hasCustomPriceRange;
   }
-  return false
+  return false;
 }
 
-export function encryptData(data: any): string {
+export function encryptData(data: any, defaultPriceRange?: { min: number, max: number }): string {
   try {
     // Validar datos antes de encriptar
-    if (!isValidData(data)) {
+    if (!isValidData(data, defaultPriceRange)) {
       return ''
     }
     
@@ -110,4 +107,19 @@ export function clearURLParams(...paramNames: string[]) {
   const url = new URL(window.location.href)
   paramNames.forEach(param => url.searchParams.delete(param))
   window.history.replaceState({}, '', url.toString())
+}
+
+// Guardar la vista actual como texto plano en la URL
+export function setViewInURL(view: string) {
+  if (typeof window === 'undefined') return
+  const url = new URL(window.location.href)
+  url.searchParams.set('view', view)
+  window.history.replaceState({}, '', url.toString())
+}
+
+// Leer la vista actual como texto plano desde la URL
+export function getViewFromURL(): string | null {
+  if (typeof window === 'undefined') return null
+  const url = new URL(window.location.href)
+  return url.searchParams.get('view')
 }

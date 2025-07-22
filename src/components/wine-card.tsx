@@ -2,12 +2,13 @@
 
 import type React from "react"
 import Image from "next/image"
-import { ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CartIcon } from "./ui/cart"
 import type { Wine } from "@/types"
 import { formatPrice, getCountryFlag } from "@/utils/price"
+import { useState } from "react"
 
 interface WineCardProps {
   wine: Wine
@@ -22,10 +23,14 @@ export function WineCard({ wine, onAddToCart, onClick, priority = false }: WineC
     onAddToCart(wine.id_vino)
   }
 
+  const handleCardClick = () => onClick(wine)
+
+  const [isHovered, setIsHovered] = useState(false)
+
   return (
     <article
       className="overflow-hidden hover:shadow-xl cursor-pointer h-full flex flex-col bg-gradient-to-b from-white to-red-50 border border-red-100 hover:border-red-300 rounded-lg sm:mx-auto w-full"
-      onClick={() => onClick(wine)}
+      onClick={handleCardClick}
       itemScope
       itemType="https://schema.org/Product"
     >
@@ -37,17 +42,17 @@ export function WineCard({ wine, onAddToCart, onClick, priority = false }: WineC
       <meta itemProp="priceCurrency" content="COP" />
 
       <CardHeader className="px-0">
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden flex items-center justify-center h-52">
           <Image
             src={wine.url_imagen || "/placeholder.svg"}
             alt={`Botella de ${wine.nombre} - ${wine.wine_details.bodega}`}
             width={200}
             height={300}
-            className="object-cover mx-auto h-52"
+            className="object-contain h-full w-auto mx-auto"
             priority={priority}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             loading={priority ? "eager" : "lazy"}
-            style={{ height: "auto" }}
+            style={{ maxHeight: "100%", maxWidth: "100%" }}
           />
         </div>
       </CardHeader>
@@ -57,7 +62,7 @@ export function WineCard({ wine, onAddToCart, onClick, priority = false }: WineC
           className="text-lg mb-2 line-clamp-2 min-h-[2.5rem]"
           itemProp="name"
         >
-            {wine.nombre} {wine.color_vino} {wine.capacidad < 750 ? wine.capacidad : ""}
+            {wine.nombre} {wine.variedades.join(" ")} {wine.capacidad < 750 ? `${wine.capacidad} ml` : ""}
         </CardTitle>
 
         <div className="flex flex-wrap gap-2 mb-3 align-middle">
@@ -110,8 +115,10 @@ export function WineCard({ wine, onAddToCart, onClick, priority = false }: WineC
           onClick={handleAddToCart}
           className="bg-red-600 hover:bg-red-700"
           aria-label={`Agregar ${wine.nombre} al carrito`}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          <ShoppingCart className="h-4 w-4" />
+          <CartIcon className="h-4 w-4" isHovered={isHovered} />
         </Button>
       </CardFooter>
     </article>

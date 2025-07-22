@@ -3,50 +3,61 @@
 import type React from "react"
 import { useRef, useState, useEffect } from "react"
 import * as XLSX from "xlsx"
-import { Download, Upload, Wine as WineIcon, SquarePen, Trash2, Plus, Palette, Grape, MapPin, Icon, DollarSign, StickyNote, Clock, Percent, Search } from "lucide-react"
+import { Download, Upload, Wine as WineIcon, SquarePen, Trash2, Plus, Palette, Grape, MapPin, Icon, DollarSign, StickyNote, Clock, Percent, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { wineGlassBottle } from '@lucide/lab'
 import { Button } from "./ui/button"
 import { Wine } from "@/types"
 import { toast } from "sonner"
 import { WineService } from "@/lib/services/wine-service"
-import EditWineModal from "./modales/edit-wine-modal"
+import EditWineModal from "./admin/edit-wine-modal"
 import { Input } from "./ui/input"
-import DeleteWineModal from "./modales/delete-wine-modal"
-import { useWineRealtime } from "@/hooks/useRealtimeWines"
+import DeleteWineModal from "./admin/delete-wine-modal"
 
 interface WineTableProps {
-  wines?: any[]
-  onWinesChange?: (wines: any[]) => void
+  wines?: Wine[]
+  onWinesChange?: (wines: Wine[]) => void
   className?: string
 }
 
-const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChange, className = "" }) => {
-  const { wines: realtimeWines, isLoading, error } = useWineRealtime();
+interface SortConfig {
+  key: string
+  direction: 'asc' | 'desc'
+}
+
+interface SortConfig {
+  key: string
+  direction: 'asc' | 'desc'
+}
+
+export function WineTable({ wines = [], onWinesChange, className }: WineTableProps) {
+  const [internalWines, setInternalWines] = useState<Wine[]>([])
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: 'nombre',
+    direction: 'asc'
+  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+
   const [searchTerm, setSearchTerm] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const winesToDisplay = externalWines || realtimeWines
+  const winesToDisplay = wines
 
   // Filtrar vinos por término de búsqueda
   const filteredWines = winesToDisplay.filter((wine) =>
     wine.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  useEffect(() => {
-    const loadWines = async () => {
-      try {
-        const winesData = await WineService.getAllWines()
-        // No necesitamos setear internalWines aquí, ya que useWineRealtime lo maneja
-      } catch (error) {
-        console.error('Error loading wines:', error)
-        // setInternalWines([]) // This line was removed as per the new_code
-      }
-    }
+  // Calcular paginación
+  const totalPages = Math.ceil(filteredWines.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentWines = filteredWines.slice(startIndex, endIndex)
 
-    if (!externalWines) {
-      loadWines()
-    }
-  }, [externalWines]) // Mantener solo si externalWines se usa para algo más que la carga inicial que ahora hace realtime
+  // Resetear a la primera página cuando cambie el término de búsqueda
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   const setWines = (newWines: any[]) => {
     if (onWinesChange) {
@@ -69,7 +80,6 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
         variedades: w.variedades.join(", "),
         "pais importacion": w.pais_importacion,
         "color vino": w.color_vino,
-        anada: w.anada,
         bodega: w.wine_details.bodega,
         "id detalle": w.wine_details.id_detalle,
         "notas cata": w.wine_details.notas_cata,
@@ -141,7 +151,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
         description: "Las columnas ID están protegidas contra edición",
         action: {
           label: "cerrar",
-          onClick: () => console.log("cerrar"),
+          onClick: () => "",
         },
       })
     } catch (error) {
@@ -149,7 +159,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
         description: "Por favor, intenta nuevamente más tarde.",
         action: {
           label: "cerrar",
-          onClick: () => console.log("cerrar"),
+          onClick: () => "",
         },
       })
     }
@@ -205,7 +215,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
           description: "Error en el archivo: verifica que los campos numéricos sean correctos.",
           action: {
             label: "cerrar",
-            onClick: () => console.log("cerrar"),
+            onClick: () => ""
           },
         })
         return
@@ -217,7 +227,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
         description: `${imported.length} vinos importados exitosamente`,
         action: {
           label: "cerrar",
-          onClick: () => console.log("cerrar"),
+          onClick: () => ""
         },
       })
 
@@ -231,7 +241,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
         description: "Error al procesar el archivo Excel.",
         action: {
           label: "cerrar",
-          onClick: () => console.log("cerrar"),
+          onClick: () => ""
         },
       })
     }
@@ -245,6 +255,42 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
     }).format(price)
   }
 
+  // Función para generar números de página
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1)
+        pages.push('ellipsis')
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i)
+        }
+      } else {
+        pages.push(1)
+        pages.push('ellipsis')
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis')
+        pages.push(totalPages)
+      }
+    }
+
+    return pages
+  }
+
   const getColorBadge = (color: string) => {
     const colorClasses = {
       Tinto: "bg-red-100 text-red-800 border-red-200",
@@ -256,6 +302,17 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
     return colorClasses[color as keyof typeof colorClasses] || "bg-gray-100 text-gray-800 border-gray-200"
   }
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && totalPages > 0) {
+      const url = new URL(window.location.href);
+      const pageParam = url.searchParams.get("page");
+      const page = pageParam ? parseInt(pageParam) : 1;
+      if (!isNaN(page) && page > 0 && page <= totalPages) {
+        setCurrentPage(page);
+      }
+    }
+  }, [totalPages]);
+
   return (
     <div className={`relative ${className}`}>
       {/* Header with controls */}
@@ -265,7 +322,13 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
             <WineIcon className="h-6 w-6 text-red-600" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-red-900">Administración de Productos</h2>
+            <h2 className="text-2xl font-bold text-red-900">Administración de Vinos</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-xs text-gray-600">
+                Datos cargados desde el servidor
+              </span>
+            </div>
           </div>
         </div>
 
@@ -293,8 +356,8 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
       </div>
 
       {/* Search Bar */}
-      <div className="px-6 pb-4">
-        <div className="relative max-w-xl">
+      <div className="px-6 pb-4 flex justify-center">
+        <div className="relative max-w-xl w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-gray-400" />
           </div>
@@ -387,7 +450,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
                 <th className="px-6 py-4 text-center text-sm font-semibold uppercase tracking-wider whitespace-nowrap">
                   <div className="flex items-center justify-center gap-2">
                     <StickyNote size={16} />
-                   Capacidad
+                    Capacidad
                   </div>
                 </th>
 
@@ -399,7 +462,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
             </thead>
 
             <tbody className="divide-y divide-gray-100">
-              {filteredWines.map((wine: Wine, index) => (
+              {currentWines.map((wine: Wine, index) => (
                 <tr key={wine.id_vino} className="hover:bg-red-50 bg-white">
                   {/* Sticky First Column */}
                   <td className={`sticky left-0 z-20 px-6 py-4 border-r border-gray-200 w-72 min-w-72 max-w-72 bg-white shadow-lg`}>
@@ -416,7 +479,7 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
                           {wine.nombre}
                         </div>
                         <div className="text-sm text-gray-500 mt-1 truncate">
-                          {wine.pais_importacion}
+                          {wine.pais_importacion} • {wine.variedades.length > 0 ? wine.variedades.join(', ') : ''}
                         </div>
                       </div>
                     </div>
@@ -499,27 +562,69 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-xl border border-red-100">
-          <WineIcon className="h-16 w-16 text-gray-400 mx-auto mb-4 animate-pulse" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Cargando vinos...</h3>
-          <p className="text-gray-500">Por favor espera mientras cargamos el inventario.</p>
+      {/* Paginación */}
+      {filteredWines.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-200 mt-2 rounded-2xl">
+          <div className="text-sm text-gray-700">
+            Mostrando {startIndex + 1} a {Math.min(endIndex, filteredWines.length)} de {filteredWines.length} vinos
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {getPageNumbers().map((page, index) => (
+                <div key={index}>
+                  {page === 'ellipsis' ? (
+                    <span className="flex h-9 w-9 items-center justify-center text-sm text-gray-500">
+                      ...
+                    </span>
+                  ) : (
+                    <Button
+                      variant={currentPage === page ? "default" : "outline"}
+                      className={`h-9 w-9 p-0 ${currentPage === page ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                      size="sm"
+                      onClick={() => setCurrentPage(page as number)}
+                    >
+                      {page}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1"
+            >
+              Siguiente
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      ) : error ? (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-xl border border-red-100">
-          <WineIcon className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-red-900 mb-2">Error al cargar vinos</h3>
-          <p className="text-gray-500">{error.message}</p>
-        </div>
-      ) : filteredWines.length === 0 && (
+      )}
+
+      {filteredWines.length === 0 && (
         <div className="text-center py-12 bg-white rounded-2xl shadow-xl border border-red-100">
           <WineIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             {searchTerm ? "No se encontraron vinos" : "No hay vinos en el inventario"}
           </h3>
           <p className="text-gray-500">
-            {searchTerm 
-              ? `No hay vinos que coincidan con "${searchTerm}"` 
+            {searchTerm
+              ? `No hay vinos que coincidan con "${searchTerm}"`
               : "Importa un archivo Excel para comenzar"
             }
           </p>
@@ -528,5 +633,3 @@ const WineTable: React.FC<WineTableProps> = ({ wines: externalWines, onWinesChan
     </div>
   )
 }
-
-export default WineTable

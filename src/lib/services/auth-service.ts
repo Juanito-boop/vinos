@@ -47,6 +47,7 @@ export class AuthService {
           email: profile.email,
           name: profile.name,
           isAdmin: profile.is_admin,
+          password: "", // Se agrega el campo 'password' como requerido por el tipo 'User'
         }
       : null
   }

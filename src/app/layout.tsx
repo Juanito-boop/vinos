@@ -7,7 +7,10 @@ import { OrderStatusProvider } from "@/providers/order-status-provider"
 import { CartProvider } from "@/providers/cart-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { StructuredData } from "@/components/structured-data"
-import { DebugRealtimeStatus } from "@/components/debug-realtime-status"
+import { WineRealtimeProvider } from "@/providers/wine-realtime-provider"
+import { MagicLinkProcessor } from "@/components/magic-link-processor"
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -99,16 +102,21 @@ export default function RootLayout({
         <StructuredData type="website" />
         <StructuredData type="organization" />
       </head>
+      {/* <meta name="google-site-verification" content="wnH05C4Cz3Cm83oxrFRPXSiPKm5vU9Ky0qYeli8ka-M" /> */}
       <body className={inter.className}>
-        <AuthProvider>
-          <OrderStatusProvider>
-            <CartProvider>
-              {children}
-            </CartProvider>
-          </OrderStatusProvider>
-        </AuthProvider>
+        <WineRealtimeProvider>
+          <AuthProvider>
+            <MagicLinkProcessor />
+            <OrderStatusProvider>
+              <CartProvider>
+                {children}
+              </CartProvider>
+            </OrderStatusProvider>
+          </AuthProvider>
+        </WineRealtimeProvider>
         <Toaster position="bottom-left" richColors />
-        {/* <DebugRealtimeStatus /> */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

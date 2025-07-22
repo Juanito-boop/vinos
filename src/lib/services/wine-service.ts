@@ -3,35 +3,62 @@ import type { Wine } from "@/types"
 
 export class WineService {
   static async getAllWines(): Promise<Wine[]> {
-    const { data, error } = await supabase
-      .from("wines")
-      .select(`
-        *,
-        wine_details (
-          id_detalle,
-          id_vino,
-          bodega,
-          notas_cata,
-          tipo_crianza,
-          contenido_azucar,
-          contenido_carbonico
-        )
-      `)
-      .order("nombre")
+    try {
+      // WineService: Fetching all wines...
+      
+      const { data, error } = await supabase
+        .from("wines")
+        .select(`
+          *,
+          wine_details (
+            id_detalle,
+            id_vino,
+            bodega,
+            notas_cata,
+            tipo_crianza,
+            contenido_azucar,
+            contenido_carbonico
+          )
+        `)
+        .order("bodega", { referencedTable: 'wine_details', ascending: true })
+        .order("nombre")
+        .order("variedades", { ascending: true })
+        .order("capacidad", { ascending: false })
 
-    if (error) {
-      console.error("Error fetching wines:", error)
-      throw error
-    }
+      if (error) {
+        console.error("WineService: Supabase error:", error)
+        throw new Error(`Error fetching wines: ${error.message || 'Unknown error'}`)
+      }
 
-    console.log('Raw wines data from service:', data)
+              // WineService: Raw data from Supabase
 
-    return (
-      data?.map((wine) => ({
+      if (!data) {
+        console.warn('WineService: No data returned from Supabase')
+        return []
+      }
+
+      const normalizedWines = data.map((wine) => ({
         ...wine,
-        wine_details: wine.wine_details[0],
-      })) || []
-    )
+        wine_details: wine.wine_details?.[0] || null,
+      }))
+
+              // WineService: Normalized wines
+      return normalizedWines
+    } catch (err) {
+      console.error("WineService: Error in getAllWines:", err)
+      
+      // Crear un error más informativo
+      let errorMessage = 'Error fetching wines'
+      if (err instanceof Error) {
+        errorMessage = err.message
+      } else if (typeof err === 'string') {
+        errorMessage = err
+      } else if (err && typeof err === 'object') {
+        errorMessage = JSON.stringify(err)
+      }
+      
+      throw new Error(errorMessage)
+    }
   }
 
   static async getWineById(id: string): Promise<Wine | null> {

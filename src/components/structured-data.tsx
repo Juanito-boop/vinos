@@ -78,11 +78,6 @@ export function StructuredData({ wines, type = "website", product }: StructuredD
       },
       {
         "@type": "PropertyValue",
-        "name": "Añada",
-        "value": wine.anada
-      },
-      {
-        "@type": "PropertyValue",
         "name": "Alcohol",
         "value": `${wine.nivel_alcohol}%`
       },

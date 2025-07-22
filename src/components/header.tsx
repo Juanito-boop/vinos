@@ -4,20 +4,22 @@ import { Settings, Search, ShoppingCart, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/providers/auth-provider"
-import { LoginModal } from "./modales/login-modal"
+import { LoginModal } from "./store/login-modal"
 import { UserMenu } from "./user-menu"
 import WineLogo from "./wine-logo"
+import { useState } from "react"
+import { CartIcon } from "./ui/cart"
 
 interface HeaderProps {
-  currentView: "store" | "admin" | "orders" | "cart"
-  onViewChange: (view: "store" | "admin" | "orders" | "cart") => void
+  currentView: "store" | "admin" | "cart"
+  onViewChange: (view: "store" | "admin" | "cart") => void
   searchTerm?: string
   onSearchChange?: (term: string) => void
   cartItemCount?: number
   onCartClick?: () => void
   onFiltersClick?: () => void
   filteredWinesCount?: number
-  availableViews?: ("store" | "admin" | "orders" | "cart")[]
+  availableViews?: ("store" | "admin" | "cart")[]
 }
 
 export function Header({
@@ -32,6 +34,7 @@ export function Header({
   availableViews = ["store"],
 }: HeaderProps) {
   const { isLoggedIn, user } = useAuth()
+  const [isHovered, setIsHovered] = useState(false)
 
   return (
     <div className="sticky top-0 z-50 bg-white shadow-lg">
@@ -62,11 +65,13 @@ export function Header({
                       className="pl-12 pr-4 py-3 w-full text-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                   </div>
-                                      <Button
+                  <Button
                     onClick={() => onViewChange("cart")}
                     className="bg-red-600 hover:bg-red-700 px-4 py-3 flex items-center gap-2 whitespace-nowrap"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
                   >
-                    <ShoppingCart className="h-5 w-5" />
+                    <CartIcon className="h-4 w-4" isHovered={isHovered} />
                     <span className="font-medium w-5 text-right">{cartItemCount}</span>
                   </Button>
                 </div>

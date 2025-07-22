@@ -13,9 +13,9 @@ import { useAuth } from "@/providers/auth-provider"
 import { WineIcon} from "lucide-react"
 
 interface UserMenuProps {
-  currentView: "store" | "admin" | "orders" | "cart"
-  onViewChange: (view: "store" | "admin" | "orders" | "cart") => void
-  availableViews: ("store" | "admin" | "orders" | "cart")[]
+  currentView: "store" | "admin" | "cart"
+  onViewChange: (view: "store" | "admin" | "cart") => void
+  availableViews: ("store" | "admin" | "cart")[]
 }
 
 export function UserMenu({ currentView, onViewChange, availableViews }: UserMenuProps) {
@@ -41,20 +41,6 @@ export function UserMenu({ currentView, onViewChange, availableViews }: UserMenu
           <DropdownMenuItem onClick={() => onViewChange("cart")}>
             <ShoppingCart className="h-4 w-4 mr-2" />
             Carrito
-          </DropdownMenuItem>
-        )}
-        
-        {!user?.isAdmin && availableViews.includes("orders") && (
-          <DropdownMenuItem onClick={() => onViewChange("orders")}>
-            <Truck className="h-4 w-4 mr-2" />
-            Mis Pedidos
-          </DropdownMenuItem>
-        )}
-        
-        {user?.isAdmin && availableViews.includes("orders") && (
-          <DropdownMenuItem onClick={() => onViewChange("orders")}>
-            <Truck className="h-4 w-4 mr-2" />
-            Pedidos
           </DropdownMenuItem>
         )}
         

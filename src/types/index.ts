@@ -23,6 +23,14 @@ export interface Winedetails {
   contenido_carbonico: string;
 }
 
+export interface Consumibles {
+  id: string;
+  nombre: string;
+  url_imagen: string;
+  descripcion: string;
+  precio: number;
+}
+
 export interface CartItem {
   id: string
   quantity: number
@@ -43,9 +51,11 @@ export interface User {
 export interface AuthContextType {
   user: User | null
   isLoggedIn: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string) => Promise<void>
   logout: () => void
   isLoading: boolean
+  isProcessingMagicLink: boolean
+  updateUserRole: (userId: string, isAdmin: boolean) => Promise<void>
 }
 
 export interface FilterState {

@@ -155,13 +155,16 @@ export function FiltersSidebar({
     {
       value: "variedades",
       title: "Variedades",
-      items: variedades.map((variedad) => ({
-        id: variedad,
-        label: variedad,
-        checked: selectedVariedades.includes(variedad),
-        count: varietalCounts[variedad] || 0,
-        onToggle: () => onToggleVariedad(variedad),
-      })),
+      items: variedades.map((variedad) => {
+        const key = variedad.trim().toLowerCase();
+        return {
+          id: variedad,
+          label: variedad,
+          checked: selectedVariedades.includes(variedad),
+          count: varietalCounts[key] || 0,
+          onToggle: () => onToggleVariedad(variedad),
+        }
+      }),
       hasScroll: true,
     },
     {
