@@ -15,9 +15,7 @@ export class WineService {
             id_vino,
             bodega,
             notas_cata,
-            tipo_crianza,
-            contenido_azucar,
-            contenido_carbonico
+            tipo_crianza
           )
         `)
         .order("bodega", { referencedTable: 'wine_details', ascending: true })
@@ -71,9 +69,7 @@ export class WineService {
           id_vino,
           bodega,
           notas_cata,
-          tipo_crianza,
-          contenido_azucar,
-          contenido_carbonico
+          tipo_crianza
         )
       `)
       .eq("id_vino", id)

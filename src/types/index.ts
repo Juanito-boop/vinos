@@ -19,8 +19,6 @@ export interface Winedetails {
   id_detalle: string;
   notas_cata: string;
   tipo_crianza: string;
-  contenido_azucar: string;
-  contenido_carbonico: string;
 }
 
 export interface Consumibles {

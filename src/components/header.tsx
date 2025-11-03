@@ -40,7 +40,7 @@ export function Header({
     <div className="sticky top-0 z-50 bg-white shadow-lg">
       {/* Header principal */}
       <header className="bg-gradient-to-r from-red-100 via-red-50 to-purple-100 border-b border-red-700">
-        <div className="container mx-auto px-4 py-6">
+        <div className="max-w-[95%] mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4 min-w-72">
               <WineLogo className="size-16" />

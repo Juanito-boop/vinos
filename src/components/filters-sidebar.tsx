@@ -35,7 +35,6 @@ interface FiltersSidebarProps {
   setIsOpen?: (open: boolean) => void
 }
 
-// Componente reutilizable para elementos de filtro
 interface FilterItemProps {
   id: string
   label: string
@@ -43,31 +42,23 @@ interface FilterItemProps {
   count: number
   onToggle: () => void
   icon?: React.ReactNode
-  hasScroll?: boolean
 }
 
-function FilterItem({ id, label, checked, count, onToggle, icon, hasScroll = false }: FilterItemProps) {
+function FilterItem({ id, label, checked, count, onToggle, icon }: FilterItemProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
-        <Checkbox
-          id={id}
-          checked={checked}
-          onCheckedChange={onToggle}
-        />
+        <Checkbox id={id} checked={checked} onCheckedChange={onToggle} />
         <Label htmlFor={id} className="text-sm font-normal flex items-center space-x-2">
           {icon && <span>{icon}</span>}
           <span>{label}</span>
         </Label>
       </div>
-      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-        {count}
-      </span>
+      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{count}</span>
     </div>
   )
 }
 
-// Componente reutilizable para secciones de filtro
 interface FilterSectionProps {
   value: string
   title: string
@@ -79,25 +70,16 @@ interface FilterSectionProps {
     onToggle: () => void
     icon?: React.ReactNode
   }>
-  hasScroll?: boolean
 }
 
-function FilterSection({ value, title, items, hasScroll = false }: FilterSectionProps) {
+function FilterSection({ value, title, items }: FilterSectionProps) {
   return (
     <AccordionItem value={value}>
       <AccordionTrigger className="text-base font-medium">{title}</AccordionTrigger>
       <AccordionContent>
-        <div className={`space-y-3 ${hasScroll ? 'max-h-52 overflow-y-auto' : ''}`}>
-          {items.map((item, index) => (
-            <FilterItem
-              key={`${item.id}-${index}`}
-              id={item.id}
-              label={item.label}
-              checked={item.checked}
-              count={item.count}
-              onToggle={item.onToggle}
-              icon={item.icon}
-            />
+        <div className="space-y-3 max-h-52 overflow-y-auto">
+          {items.map((item, i) => (
+            <FilterItem key={`${item.id}-${i}`} {...item} />
           ))}
         </div>
       </AccordionContent>
@@ -105,17 +87,15 @@ function FilterSection({ value, title, items, hasScroll = false }: FilterSection
   )
 }
 
-// Función helper para obtener el icono del color
 function getColorIcon(color: string) {
   return (
     <div
-      className={`w-3 h-3 rounded-full ${
-        color === "Tinto"
+      className={`w-3 h-3 rounded-full ${color === "Tinto"
           ? "bg-red-600"
           : color === "Blanco"
             ? "bg-yellow-200 border border-yellow-400"
             : "bg-pink-300"
-      }`}
+        }`}
     />
   )
 }
@@ -146,50 +126,24 @@ export function FiltersSidebar({
   setIsOpen: externalSetIsOpen,
 }: FiltersSidebarProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
-  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
-  const setIsOpen = externalSetIsOpen || setInternalIsOpen
+  const isOpen = externalIsOpen ?? internalIsOpen
+  const setIsOpen = externalSetIsOpen ?? setInternalIsOpen
 
-  // Configuración de las secciones de filtro
-  const filterSections = [
+  const mainFilters = [
     {
-      value: "variedades",
-      title: "Variedades",
-      items: variedades.map((variedad) => {
-        const key = variedad.trim().toLowerCase();
-        return {
-          id: variedad,
-          label: variedad,
-          checked: selectedVariedades.includes(variedad),
-          count: varietalCounts[key] || 0,
-          onToggle: () => onToggleVariedad(variedad),
-        }
-      }),
-      hasScroll: true,
-    },
-    {
-      value: "paises",
-      title: "Países",
-      items: paises.map((pais) => ({
-        id: pais,
-        label: pais,
-        checked: selectedPaises.includes(pais),
-        count: paisCounts[pais] || 0,
-        onToggle: () => onTogglePais(pais),
-        icon: getCountryFlag(pais),
-      })),
-    },
-    {
-      value: "bodegas",
-      title: "Bodegas",
-      items: bodegas.map((bodega) => ({
-        id: bodega,
-        label: bodega,
-        checked: selectedBodegas.includes(bodega),
-        count: bodegaCounts[bodega] || 0,
-        onToggle: () => onToggleBodega(bodega),
-      })),
-      hasScroll: true,
+      value: "precio",
+      title: "Precio",
+      custom: (
+        <PriceRangeSlider
+          minPrice={priceRange.min}
+          maxPrice={priceRange.max}
+          currentMin={currentPriceRange.min}
+          currentMax={currentPriceRange.max}
+          onRangeChange={onUpdatePriceRange}
+        />
+      ),
     },
     {
       value: "colores",
@@ -203,71 +157,87 @@ export function FiltersSidebar({
         icon: getColorIcon(color),
       })),
     },
+    {
+      value: "paises",
+      title: "País",
+      items: paises.map((pais) => ({
+        id: pais,
+        label: pais,
+        checked: selectedPaises.includes(pais),
+        count: paisCounts[pais] || 0,
+        onToggle: () => onTogglePais(pais),
+        icon: getCountryFlag(pais),
+      })),
+    },
+  ]
+
+  const advancedFilters = [
+    {
+      value: "bodegas",
+      title: "Bodega",
+      items: bodegas.map((bodega) => ({
+        id: bodega,
+        label: bodega,
+        checked: selectedBodegas.includes(bodega),
+        count: bodegaCounts[bodega] || 0,
+        onToggle: () => onToggleBodega(bodega),
+      })),
+    },
+    {
+      value: "variedades",
+      title: "Variedad",
+      items: variedades.map((variedad) => ({
+        id: variedad,
+        label: variedad,
+        checked: selectedVariedades.includes(variedad),
+        count: varietalCounts[variedad.toLowerCase()] || 0,
+        onToggle: () => onToggleVariedad(variedad),
+      })),
+    },
   ]
 
   return (
     <>
-      {/* Overlay para móvil/tablet */}
       {isOpen && (
         <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setIsOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`bg-gradient-to-b from-white to-red-50 rounded-lg shadow-lg border border-red-100 p-6 h-fit lg:block lg:static lg:translate-x-0 w-72 ${isOpen ? "block" : "hidden"}
-        lg:z-auto z-50
-        fixed lg:relative top-0 left-0 lg:top-auto lg:left-auto
-        max-h-screen lg:max-h-none overflow-y-auto
-      `}
+        className={`bg-gradient-to-b from-white to-red-50 rounded-lg shadow-lg border border-red-100 p-6 h-fit lg:block lg:static lg:translate-x-0 w-72 ${isOpen ? "block" : "hidden"
+          } lg:z-auto z-50 fixed lg:relative top-0 left-0 lg:top-auto lg:left-auto max-h-screen lg:max-h-none overflow-y-auto`}
       >
-        {/* Botón cerrar para móvil/tablet */}
-        <div className="lg:hidden flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Filtros</h2>
-          <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Título del sidebar */}
         <div className="hidden lg:flex items-center space-x-2 mb-6">
           <Filter className="h-5 w-5 text-red-600" />
           <h2 className="text-lg font-semibold text-red-900">Filtros</h2>
         </div>
 
-        {/* Filtro de precio */}
-        <div className="mb-6">
-          <PriceRangeSlider
-            minPrice={priceRange.min}
-            maxPrice={priceRange.max}
-            currentMin={currentPriceRange.min}
-            currentMax={currentPriceRange.max}
-            onRangeChange={onUpdatePriceRange}
-          />
-        </div>
+        <Accordion type="multiple" defaultValue={["precio", "colores", "paises"]}>
+          {mainFilters.map((section) =>
+            section.custom ? (
+              <div key={section.value} className="mb-6">{section.custom}</div>
+            ) : (
+              <FilterSection key={section.value} {...section} />
+            )
+          )}
 
-        {/* Acordeón con filtros */}
-        <Accordion type="multiple" defaultValue={["variedades", "bodegas", "paises", "colores"]}>
-          {filterSections.map((section, index) => (
-            <FilterSection
-              key={`${section.value}-${index}`}
-              value={section.value}
-              title={section.title}
-              items={section.items}
-              hasScroll={section.hasScroll}
-            />
-          ))}
+          {showAdvanced &&
+            advancedFilters.map((section) => (
+              <FilterSection key={section.value} {...section} />
+            ))}
         </Accordion>
 
-        {/* Botones de acción */}
+        <Button
+          variant="ghost"
+          className="w-full mt-4 text-red-600 hover:text-red-700"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+        >
+          {showAdvanced ? "– Ocultar filtros avanzados" : "+ Ver más filtros avanzados"}
+        </Button>
+
         {hasActiveFilters && (
-          <>
-            <Button variant="outline" onClick={onClearFilters} className="w-full mt-4">
-              Limpiar Filtros
-            </Button>
-            <Button onClick={() => setIsOpen(false)} className="lg:hidden w-full mt-2 bg-red-600 hover:bg-red-700">
-              Aplicar Filtros
-            </Button>
-          </>
+          <Button variant="outline" onClick={onClearFilters} className="w-full mt-4">
+            Limpiar Filtros
+          </Button>
         )}
       </aside>
     </>

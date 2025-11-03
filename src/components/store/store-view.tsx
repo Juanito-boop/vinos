@@ -100,9 +100,15 @@ export function StoreView({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      {/* Contenido principal */}
-      <div className="flex-1 flex min-h-0">
+      <div className="flex-1 flex flex-row gap-6 min-h-0">
+        {selectedWine && (
+          <WineDetailModal
+            wine={selectedWine}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onAddToCart={handleAddToCart}
+          />
+        )}
         {/* Sidebar de filtros */}
         <FiltersSidebar
           isOpen={isSidebarOpen}
@@ -131,7 +137,7 @@ export function StoreView({
         />
 
         {/* Contenido principal */}
-        <main className="flex-1 lg:px-6 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto">
           {filteredWines.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -167,16 +173,5 @@ export function StoreView({
           )}
         </main>
       </div>
-
-      {/* Modal de detalles del vino */}
-      {selectedWine && (
-        <WineDetailModal
-          wine={selectedWine}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onAddToCart={handleAddToCart}
-        />
-      )}
-    </div>
   )
 }

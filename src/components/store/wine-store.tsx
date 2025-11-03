@@ -70,23 +70,23 @@ export default function WineStore({ wines }: WineStoreProps) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-white relative flex flex-col">
+    <div className="min-h-screen w-full bg-[#e8e8e8] relative flex flex-col">
       <Header
         currentView={currentView}
         onViewChange={handleViewChange}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         cartItemCount={cartItemCount}
-        onCartClick={() => {}} // Se maneja dentro de StoreView
+        onCartClick={() => { }} // Se maneja dentro de StoreView
         onFiltersClick={() => setIsSidebarOpen(true)}
         filteredWinesCount={filteredWinesCount} // Se calcula dentro de StoreView
         availableViews={availableViews}
       />
 
       <main className="flex-1">
-        <div className="container mx-auto px-4 py-6">
+        <div className="mx-auto my-8 max-w-[95%] p-6 rounded-lg bg-muted shadow-[20px_20px_60px_theme(colors.muted.DEFAULT),_-20px_-20px_60px_#ffffff]">
           {currentView === "store" && (
-            <Tabs defaultValue="Vinos"  className="w-full">
+            <Tabs defaultValue="Vinos" className="w-full">
               <TabsList>
                 <TabsTrigger value="Vinos">Vinos</TabsTrigger>
                 <TabsTrigger value="Comestibles">Comestibles</TabsTrigger>

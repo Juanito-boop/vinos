@@ -9,6 +9,7 @@ import { CartIcon } from "./ui/cart"
 import type { Wine } from "@/types"
 import { formatPrice, getCountryFlag } from "@/utils/price"
 import { useState } from "react"
+import { Pointer } from "lucide-react"
 
 interface WineCardProps {
   wine: Wine
@@ -24,12 +25,11 @@ export function WineCard({ wine, onAddToCart, onClick, priority = false }: WineC
   }
 
   const handleCardClick = () => onClick(wine)
-
   const [isHovered, setIsHovered] = useState(false)
 
   return (
     <article
-      className="overflow-hidden hover:shadow-xl cursor-pointer h-full flex flex-col bg-gradient-to-b from-white to-red-50 border border-red-100 hover:border-red-300 rounded-lg sm:mx-auto w-full"
+      className="overflow-hidden cursor-pointer h-full flex flex-col bg-gradient-to-b from-white to-red-50 border border-red-100 hover:border-red-300 rounded-lg sm:mx-auto w-full transition-all duration-300 relative group"
       onClick={handleCardClick}
       itemScope
       itemType="https://schema.org/Product"
@@ -41,8 +41,8 @@ export function WineCard({ wine, onAddToCart, onClick, priority = false }: WineC
       <meta itemProp="price" content={wine.precio.toString()} />
       <meta itemProp="priceCurrency" content="COP" />
 
-      <CardHeader className="px-0">
-        <div className="relative overflow-hidden flex items-center justify-center h-52">
+      <CardHeader className="px-0 pt-0">
+        <div className="relative overflow-hidden flex items-center justify-center h-44 md:h-52 lg:h-60 p-2">
           <Image
             src={wine.url_imagen || "/placeholder.svg"}
             alt={`Botella de ${wine.nombre} - ${wine.wine_details.bodega}`}
@@ -52,73 +52,68 @@ export function WineCard({ wine, onAddToCart, onClick, priority = false }: WineC
             priority={priority}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             loading={priority ? "eager" : "lazy"}
-            style={{ maxHeight: "100%", maxWidth: "100%" }}
+            style={{ objectFit: "contain", maxHeight: "100%" }}
           />
+          <Badge
+            variant="outline"
+            className="absolute top-4 left-4 border-blue-200 text-blue-700 text-xs py-1 px-2 hover:bg-blue-50 transition-colors duration-200 shadow-sm flex items-center gap-1"
+            itemProp="countryOfOrigin"
+          >
+            <span className="text-xs">{getCountryFlag(wine.pais_importacion)} {wine.pais_importacion}</span>
+          </Badge>
+          <Badge
+            variant="outline"
+            className="absolute bottom-4 right-4 border-yellow-200 text-yellow-700 text-xs py-1 px-2 hover:bg-yellow-50 transition-colors duration-200 shadow-sm flex items-center gap-1"
+            itemProp="additionalProperty"
+          >
+            <Pointer className="size-4" /> más info
+          </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 flex-1 flex flex-col">
         <CardTitle
-          className="text-lg mb-2 line-clamp-2 min-h-[2.5rem]"
+          className="text-lg mb-2 line-clamp-2 min-h-[2.5rem] font-bold text-gray-800 relative pl-3 border-l-4 border-red-500"
           itemProp="name"
         >
-            {wine.nombre} {wine.variedades.join(" ")} {wine.capacidad < 750 ? `${wine.capacidad} ml` : ""}
+          {wine.nombre} {wine.variedades.join(" ")}
+          {wine.capacidad < 750 && (
+            <span className="ml-1 text-xs font-normal text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
+              {wine.capacidad} ml
+            </span>
+          )}
         </CardTitle>
 
-        <div className="flex flex-wrap gap-2 mb-3 align-middle">
-          {wine.variedades.map((variedad) => (
-            <Badge
-              key={variedad}
-              variant="secondary"
-              className="bg-red-100 text-red-800 text-xs"
-              itemProp="additionalProperty"
-            >
-              {variedad}
-            </Badge>
-          ))}
-          <Badge
-            variant="outline"
-            className="border-red-200 text-red-700 text-xs"
-            itemProp="brand"
-          >
-            {wine.wine_details.bodega}
-          </Badge>
-          <Badge
-            variant="outline"
-            className="border-blue-200 text-blue-700 text-xs"
-            itemProp="countryOfOrigin"
-          >
-            {getCountryFlag(wine.pais_importacion)} {wine.pais_importacion}
-          </Badge>
-        </div>
-
-        <div className="text-sm text-gray-500 mt-auto">
-          <p itemProp="additionalProperty">
-            {wine.wine_details.tipo_crianza} • {wine.nivel_alcohol}% Vol.
-          </p>
+        <div className="mt-auto bg-gray-50 p-2 rounded-md border border-gray-100 flex items-center justify-between">
+          <span className="text-gray-400 text-sm italic">Descripción próximamente</span>
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex justify-between items-start gap-2">
-        <span
-          className="text-2xl font-bold text-red-600 my-auto"
-          itemProp="offers"
-          itemScope
-          itemType="https://schema.org/Offer"
-        >
-          <meta itemProp="price" content={wine.precio.toString()} />
-          <meta itemProp="priceCurrency" content="CLP" />
-          <meta itemProp="availability" content="https://schema.org/InStock" />
-          {formatPrice(wine.precio)}
-        </span>
+      <CardFooter className="p-4 pt-0 flex justify-between items-center gap-2 mt-2">
+        <div className="flex flex-col">
+          <span
+            className="text-2xl font-bold text-red-600 leading-none"
+            itemProp="offers"
+            itemScope
+            itemType="https://schema.org/Offer"
+          >
+            <meta itemProp="price" content={wine.precio.toString()} />
+            <meta itemProp="priceCurrency" content="COP" />
+            <meta itemProp="availability" content="https://schema.org/InStock" />
+            {formatPrice(wine.precio)}
+          </span>
+        </div>
         <Button
           onClick={handleAddToCart}
-          className="bg-red-600 hover:bg-red-700"
+          className="bg-red-600 hover:bg-red-700 shadow-md hover:shadow-lg transition-all duration-300 rounded-md flex items-center justify-center"
           aria-label={`Agregar ${wine.nombre} al carrito`}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          size="icon"
         >
-          <CartIcon className="h-4 w-4" isHovered={isHovered} />
+          <div className="flex items-center justify-center">
+            <CartIcon className="h-5 w-5" isHovered={isHovered} />
+          </div>
         </Button>
       </CardFooter>
     </article>
