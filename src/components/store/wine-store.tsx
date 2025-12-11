@@ -70,7 +70,7 @@ export default function WineStore({ wines }: WineStoreProps) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#e8e8e8] relative flex flex-col">
+    <div className="min-h-screen w-full bg-white relative flex flex-col">
       <Header
         currentView={currentView}
         onViewChange={handleViewChange}
@@ -83,66 +83,64 @@ export default function WineStore({ wines }: WineStoreProps) {
         availableViews={availableViews}
       />
 
-      <main className="flex-1">
-        <div className="mx-auto my-8 max-w-[95%] p-6 rounded-lg bg-muted shadow-[20px_20px_60px_theme(colors.muted.DEFAULT),_-20px_-20px_60px_#ffffff]">
-          {currentView === "store" && (
-            <Tabs defaultValue="Vinos" className="w-full">
-              <TabsList>
-                <TabsTrigger value="Vinos">Vinos</TabsTrigger>
-                <TabsTrigger value="Comestibles">Comestibles</TabsTrigger>
-              </TabsList>
-              <TabsContent value="Vinos">
-                <StoreView
-                  wines={wines}
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  onFiltersClick={() => setIsSidebarOpen(true)}
-                  onCartItemCountChange={setCartItemCount}
-                  onFilteredWinesCountChange={setFilteredWinesCount}
-                  isSidebarOpen={isSidebarOpen}
-                  onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-                />
-              </TabsContent>
-              <TabsContent value="Comestibles">
-                {loadingConsumibles ? (
-                  <div className="flex items-center justify-center h-32" role="status" aria-live="polite">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto mb-4" aria-hidden="true"></div>
-                      <p className="text-gray-600">Cargando consumibles...</p>
-                    </div>
+      <main className="relative p-6 rounded-lg bg-[#e8e8e8] shadow-[rgba(50,50,93,0.25)_0px_50px_100px_-20px,rgba(0,0,0,0.3)_0px_30px_60px_-30px,rgba(10,37,64,0.35)_0px_-2px_6px_0px_inset] flex-1 max-w-[95%] mx-auto my-8 w-full">
+        {currentView === "store" && (
+          <Tabs defaultValue="Vinos" className="w-full">
+            <TabsList>
+              <TabsTrigger value="Vinos">Vinos</TabsTrigger>
+              <TabsTrigger value="Comestibles">Comestibles</TabsTrigger>
+            </TabsList>
+            <TabsContent value="Vinos">
+              <StoreView
+                wines={wines}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onFiltersClick={() => setIsSidebarOpen(true)}
+                onCartItemCountChange={setCartItemCount}
+                onFilteredWinesCountChange={setFilteredWinesCount}
+                isSidebarOpen={isSidebarOpen}
+                onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+              />
+            </TabsContent>
+            <TabsContent value="Comestibles">
+              {loadingConsumibles ? (
+                <div className="flex items-center justify-center h-32" role="status" aria-live="polite">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto mb-4" aria-hidden="true"></div>
+                    <p className="text-gray-600">Cargando consumibles...</p>
                   </div>
-                ) : errorConsumibles ? (
-                  <div className="text-center text-red-500">{errorConsumibles?.message}</div>
-                ) : consumibles.length === 0 ? (
-                  <div className="text-center text-gray-500">No hay consumibles disponibles.</div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {consumibles.map((item) => (
-                      <Card key={item.id} className="flex flex-col items-center">
-                        <CardHeader className="flex flex-col items-center">
-                          <img src={item.url_imagen} alt={item.nombre} className="w-32 h-32 object-cover mb-2 rounded" />
-                          <CardTitle className="text-lg text-center">{item.nombre}</CardTitle>
-                          <CardDescription className="text-center">{item.descripcion}</CardDescription>
-                        </CardHeader>
-                        <CardFooter className="p-4 pt-0 flex justify-between items-start gap-2">
-                          <span className="text-2xl font-bold text-red-600 my-auto">{formatPrice(item.precio)}</span>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          )}
+                </div>
+              ) : errorConsumibles ? (
+                <div className="text-center text-red-500">{errorConsumibles?.message}</div>
+              ) : consumibles.length === 0 ? (
+                <div className="text-center text-gray-500">No hay consumibles disponibles.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {consumibles.map((item) => (
+                    <Card key={item.id} className="flex flex-col items-center">
+                      <CardHeader className="flex flex-col items-center">
+                        <img src={item.url_imagen} alt={item.nombre} className="w-32 h-32 object-cover mb-2 rounded" />
+                        <CardTitle className="text-lg text-center">{item.nombre}</CardTitle>
+                        <CardDescription className="text-center">{item.descripcion}</CardDescription>
+                      </CardHeader>
+                      <CardFooter className="p-4 pt-0 flex justify-between items-start gap-2">
+                        <span className="text-2xl font-bold text-red-600 my-auto">{formatPrice(item.precio)}</span>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
 
-          {currentView === "admin" && <AdminView wines={wines} />}
+        {currentView === "admin" && <AdminView wines={wines} />}
 
-          {currentView === "cart" && (
-            <CartView onBack={() => handleViewChange("store")} />
-          )}
-        </div>
+        {currentView === "cart" && (
+          <CartView onBack={() => handleViewChange("store")} />
+        )}
       </main>
-
+      
       <Footer />
     </div>
   )
