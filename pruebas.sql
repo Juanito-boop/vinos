@@ -14,22 +14,23 @@ INSERT INTO public.wines ( nombre, precio, url_imagen, descripcion, nivel_alcoho
 RETURNING id_vino, nombre;
 
 
-INSERT INTO public.wine_details ( notas_cata, contenido_azucar, contenido_carbonico, tipo_crianza, bodega) VALUES
-	( 'Cerezas, chocolate'            , 'Seco'     , 'Tranquilo' , 'Crianza'      , 'bodega La Posta'                  ),
-	( 'Cereza, moras, taninos suaves' , 'Seco'     , 'Tranquilo' , 'Joven'        , 'Zuccardi Valle de Uco'            ),
-	( 'Frutal y joven'                , 'Semiseco' , 'Tranquilo' , 'Joven'        , 'Bodega Reserva de la Tierra'      ),
-	( 'Cereza, moras, especias'       , 'Seco'     , 'Tranquilo' , 'Joven'        , 'Dominio de Eguren'                ),
-	( 'Frutos rojos, hierbas secas'   , 'Seco'     , 'Tranquilo' , 'Gran Reserva' , 'Bodega Aleanna'                   ),
-	( 'Frutal con toques de hierbas'  , 'Seco'     , 'Tranquilo' , 'Joven'        , 'Viña Mirador del Valle'           ),
-	( 'Cereza, tabaco, cacao'         , 'Seco'     , 'Tranquilo' , 'Reserva'      , 'bodega Catena Zapata'             ),
-	( 'Ciruela, especias, tabaco'     , 'Seco'     , 'Tranquilo' , 'Gran Reserva' , 'Viña Don Melchor'                 ),
-	( 'Ciruela, notas de vainilla'    , 'Seco'     , 'Tranquilo' , 'Gran Reserva' , 'Bodega Maison Castel'             ),
-	( 'Cereza madura, roble'          , 'Seco'     , 'Tranquilo' , 'Reserva'      , 'Viñedo Ain Karim'                 ),
-	( 'Cítrico, flor de naranjo'      , 'Seco'     , 'Tranquilo' , 'Joven'        , 'Santa Margherita Gruppo Vinicolo' ),
-	( 'Frutas negras, especias'       , 'Seco'     , 'Tranquilo' , 'Gran Reserva' , 'Viña Montes'                      ),
-	( 'Frutas rojas, especias'        , 'Seco'     , 'Tranquilo' , 'Reserva'      , 'Bodegas Muga'                     ),
-	( 'Frutas rojas, suaves taninos'  , 'Seco'     , 'Tranquilo' , 'Joven'        , 'Bisquertt Family Vineyards'       ),
-	( 'Frutas negras, chocolate'      , 'Seco'     , 'Tranquilo' , 'Gran Reserva' , 'Finca Apalta de Montes'           );
+INSERT INTO public.wine_details 
+	( notas_cata                      , tipo_crianza   , bodega                             ) VALUES
+	( 'Cerezas, chocolate'            , 'Crianza'      , 'bodega La Posta'                  ),
+	( 'Cereza, moras, taninos suaves' , 'Joven'        , 'Zuccardi Valle de Uco'            ),
+	( 'Frutal y joven'                , 'Joven'        , 'Bodega Reserva de la Tierra'      ),
+	( 'Cereza, moras, especias'       , 'Joven'        , 'Dominio de Eguren'                ),
+	( 'Frutos rojos, hierbas secas'   , 'Gran Reserva' , 'Bodega Aleanna'                   ),
+	( 'Frutal con toques de hierbas'  , 'Joven'        , 'Viña Mirador del Valle'           ),
+	( 'Cereza, tabaco, cacao'         , 'Reserva'      , 'bodega Catena Zapata'             ),
+	( 'Ciruela, especias, tabaco'     , 'Gran Reserva' , 'Viña Don Melchor'                 ),
+	( 'Ciruela, notas de vainilla'    , 'Gran Reserva' , 'Bodega Maison Castel'             ),
+	( 'Cereza madura, roble'          , 'Reserva'      , 'Viñedo Ain Karim'                 ),
+	( 'Cítrico, flor de naranjo'      , 'Joven'        , 'Santa Margherita Gruppo Vinicolo' ),
+	( 'Frutas negras, especias'       , 'Gran Reserva' , 'Viña Montes'                      ),
+	( 'Frutas rojas, especias'        , 'Reserva'      , 'Bodegas Muga'                     ),
+	( 'Frutas rojas, suaves taninos'  , 'Joven'        , 'Bisquertt Family Vineyards'       ),
+	( 'Frutas negras, chocolate'      , 'Gran Reserva' , 'Finca Apalta de Montes'           );
 
 INSERT INTO public.wines 
 	( nombre                    , precio , variedades                                 , pais_importacion, color_vino, capacidad ) VALUES

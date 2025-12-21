@@ -9,17 +9,17 @@ interface WineGridProps {
 }
 
 export function WineGrid({ wines, onAddToCart, onClick, priority = false }: WineGridProps) {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-      {wines.map((wine, index) => (
-        <WineCard
-          key={wine.id_vino}
-          wine={wine}
-          onAddToCart={onAddToCart}
-          onClick={onClick}
-          priority={priority && index < 4} // Solo las primeras 4 imágenes con priority
-        />
-      ))}
-    </div>
-  )
+	return (
+		<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+			{wines.map((wine, index) => (
+				<WineCard
+					key={wine.id_vino}
+					wine={wine}
+					onAddToCart={onAddToCart}
+					onClick={onClick}
+					priority={priority && index < 4} // Solo las primeras 4 imágenes con priority
+				/>
+			))}
+		</div>
+	)
 } 

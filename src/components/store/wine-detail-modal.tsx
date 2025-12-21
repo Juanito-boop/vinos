@@ -9,6 +9,7 @@ import type { Wine } from "@/types"
 import { formatPrice, getCountryFlag } from "@/utils/price"
 import { useState } from "react"
 import { CartIcon } from "../ui/cart"
+import { Minus, Plus } from "lucide-react"
 
 interface WineDetailModalProps {
   wine: Wine | null
@@ -18,140 +19,188 @@ interface WineDetailModalProps {
 }
 
 export function WineDetailModal({ wine, isOpen, onClose, onAddToCart }: WineDetailModalProps) {
-  const [isHovered, setIsHovered] = useState(false)
-  if (!wine) return null
+	const [isHovered, setIsHovered] = useState(false)
+	const [quantity, setQuantity] = useState(1)
 
-  const handleAddToCart = () => {
-    onAddToCart(wine.id_vino)
-    onClose()
-  }
+	if (!wine) return null
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] min-w-3xl sm:w-full">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{wine.nombre}</DialogTitle>
-          <DialogDescription>
-            Información detallada sobre {wine.nombre} de {wine.wine_details.bodega}
-          </DialogDescription>
-        </DialogHeader>
+	const handleAddToCart = () => {
+		// Note: Assuming onAddToCart can take a quantity, 
+		// but if not, we might need to call it multiple times 
+		// or update the context. For now, let's keep it simple 
+		// and assume the user wants to see the selector.
+		for (let i = 0; i < quantity; i++) {
+			onAddToCart(wine.id_vino)
+		}
+		onClose()
+	}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 h-full">
-          <div className="flex flex-col justify-between">
-            <Image
-              src={wine.url_imagen || "/placeholder.svg"}
-              alt={`Botella de ${wine.nombre} - ${wine.wine_details.bodega}`}
-              width={300}
-              height={400}
-              className="mx-auto max-w-xs md:max-w-none md:mx-auto max-h-32 md:max-h-80 lg:max-h-60 h-auto object-contain rounded-lg"
-              priority
-            />
-            <div className="border-t hidden lg:block">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
-                <span className="text-2xl md:text-3xl font-bold text-red-600" aria-label={`Precio: ${formatPrice(wine.precio)}`}>
-                  {formatPrice(wine.precio)}
-                </span>
-                <div className="text-left sm:text-right">
-                  <p className="text-xs md:text-sm text-gray-500">Precio por botella</p>
-                  <p className="text-xs text-green-600">✓ Disponible</p>
-                </div>
-              </div>
+	const incrementQuantity = () => setQuantity(prev => prev + 1)
+	const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1)
 
-              <Button
-                onClick={handleAddToCart}
-                className="w-full bg-red-600 hover:bg-red-700 text-sm md:text-base"
-                aria-label={`Agregar ${wine.nombre} al carrito`}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-              >
-                <CartIcon className="h-4 w-4" isHovered={isHovered} />
-                Agregar al Carrito
-              </Button>
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-hidden p-0 bg-white/95 backdrop-blur-xl border-none shadow-2xl rounded-[2rem] flex flex-col">
+				<div className="flex flex-col h-full">
+					<DialogHeader className="p-8 pb-4">
+						<div className="flex flex-col gap-1">
+							<p className="text-[10px] uppercase tracking-[0.3em] font-black text-primary/60">{wine.wine_details.bodega}</p>
+							<DialogTitle className="text-2xl font-black tracking-tight text-gray-900">{wine.nombre}</DialogTitle>
+						</div>
+					</DialogHeader>
 
-            </div>
-          </div>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-0 flex-1 overflow-hidden">
+						<div className="p-8 flex flex-col items-center justify-center bg-gradient-to-b from-gray-50/50 to-white md:border-r border-gray-100">
+							<div className="relative group">
+								<div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700" />
+								<Image
+									src={wine.url_imagen || "/placeholder.svg"}
+									alt={`Botella de ${wine.nombre} - ${wine.wine_details.bodega}`}
+									width={300}
+									height={400}
+									className="relative mx-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-700 h-auto w-auto max-h-[300px] object-contain"
+									priority
+								/>
+							</div>
 
-          <div className="max-h-[50vh] md:max-h-[70vh] space-y-3 md:space-y-4 overflow-y-auto px-2 md:px-4 pb-3">
-            <div>
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">Información General</h3>
-              {/* <div className="space-y-1 sm:space-y-2 text-xs md:text-sm"> */}
-              <div className="text-sm lg:text-md grid grid-cols-2 grid-rows-2 gap-x-4 gap-y-2">
-                <span className="font-medium">Bodega: {wine.wine_details.bodega}</span>
-                <span className="font-medium">País: {getCountryFlag(wine.pais_importacion)}{" "}{wine.pais_importacion}</span>
-                <span className="font-medium">Variedades: {wine.variedades.join(", ")}</span>
-                <span className="font-medium">Tipo de crianza: {wine.wine_details.tipo_crianza}</span>
-              </div>
-            </div>
+							<div className="w-full mt-8 space-y-6 hidden md:block">
+								<div className="flex flex-col gap-4">
+									<div className="flex items-center justify-between">
+										<div className="flex flex-col">
+											<span className="text-[10px] uppercase tracking-widest font-black text-gray-400">Precio especial</span>
+											<span className="text-xl font-black text-primary tracking-tighter">
+												{formatPrice(wine.precio)}
+											</span>
+										</div>
+										<div className="flex items-center bg-gray-100 rounded-xl p-0.5 border border-gray-200">
+											<Button
+												variant="ghost"
+												size="icon"
+												className="h-7 w-7 rounded-lg text-primary hover:bg-white transition-all"
+												onClick={decrementQuantity}
+											>
+												<Minus className="h-3.5 w-3.5" />
+											</Button>
+											<span className="px-3 font-black text-primary min-w-[2.5rem] text-center text-sm">{quantity}</span>
+											<Button
+												variant="ghost"
+												size="icon"
+												className="h-7 w-7 rounded-lg text-primary hover:bg-white transition-all"
+												onClick={incrementQuantity}
+											>
+												<Plus className="h-3.5 w-3.5" />
+											</Button>
+										</div>
+									</div>
 
-            <div>
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">Descripción</h3>
-              <p className="text-gray-600 text-xs md:text-sm leading-relaxed">{wine.descripcion}</p>
-            </div>
+									<Button
+										onClick={handleAddToCart}
+										className="w-full bg-primary hover:bg-primary/90 h-10 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all duration-300 text-sm font-black tracking-wide gap-3"
+										onMouseEnter={() => setIsHovered(true)}
+										onMouseLeave={() => setIsHovered(false)}
+									>
+										<CartIcon className="h-4 w-4" isHovered={isHovered} />
+                    AÑADIR A LA CAVA
+									</Button>
+								</div>
+							</div>
+						</div>
 
-            <div>
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">Características</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs md:text-sm">
-                <div>
-                  <p className="font-medium text-gray-700">Graduación alcohólica</p>
-                  <p className="text-gray-600">{wine.nivel_alcohol}% Vol.</p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-700">Color</p>
-                  <p className="text-gray-600">{wine.color_vino}</p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-700">Contenido de azúcar</p>
-                  <p className="text-gray-600">{wine.wine_details.contenido_azucar}</p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-700">Tipo</p>
-                  <p className="text-gray-600">{wine.wine_details.contenido_carbonico}</p>
-                </div>
-              </div>
-            </div>
+						<div className="p-8 space-y-8 bg-white overflow-y-auto max-h-[calc(90vh-120px)] scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+							<section>
+								<h3 className="text-xs uppercase tracking-[0.2em] font-black text-primary/40 mb-4 flex items-center gap-2">
+									<span className="h-px w-8 bg-primary/20" /> Perfil del vino
+								</h3>
+								<div className="grid grid-cols-2 gap-y-4 gap-x-6">
+									<div className="space-y-1">
+										<p className="text-[10px] uppercase font-bold text-gray-400">Variedades</p>
+										<p className="text-sm font-bold text-gray-800">{wine.variedades.join(", ")}</p>
+									</div>
+									<div className="space-y-1">
+										<p className="text-[10px] uppercase font-bold text-gray-400">Crianza</p>
+										<p className="text-sm font-bold text-gray-800">{wine.wine_details.tipo_crianza || "Importado"}</p>
+									</div>
+									<div className="space-y-1">
+										<p className="text-[10px] uppercase font-bold text-gray-400">Origen</p>
+										<p className="text-sm font-bold text-gray-800 flex items-center gap-2">
+											{getCountryFlag(wine.pais_importacion)} {wine.pais_importacion}
+										</p>
+									</div>
+									<div className="space-y-1">
+										<p className="text-[10px] uppercase font-bold text-gray-400">Alcohol</p>
+										<p className="text-sm font-bold text-gray-800">{wine.nivel_alcohol}% Vol.</p>
+									</div>
+								</div>
+							</section>
 
-            <div>
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">Notas de Cata</h3>
-              <p className="text-gray-600 leading-relaxed">{wine.wine_details.notas_cata}</p>
-            </div>
+							<section>
+								<h3 className="text-xs uppercase tracking-[0.2em] font-black text-primary/40 mb-3 flex items-center gap-2">
+									<span className="h-px w-8 bg-primary/20" /> Descripción
+								</h3>
+								<p className="text-gray-600 text-sm leading-relaxed font-medium">
+									{wine.descripcion || "Un vino excepcional seleccionado cuidadosamente para nuestra exclusiva colección."}
+								</p>
+							</section>
 
-            <div className="flex flex-wrap gap-1 sm:gap-2" role="group" aria-label="Etiquetas del vino">
-              {wine.variedades.map((variedad) => (
-                <Badge key={variedad} variant="secondary" className="bg-red-100 text-red-800 text-xs">
-                  {variedad}
-                </Badge>
-              ))}
-              <Badge variant="outline" className="border-red-200 text-red-700">
-                {wine.wine_details.bodega}
-              </Badge>
-              <Badge variant="outline" className="border-blue-200 text-blue-700">
-                {getCountryFlag(wine.pais_importacion)} {wine.pais_importacion}
-              </Badge>
-            </div>
+							<section>
+								<h3 className="text-xs uppercase tracking-[0.2em] font-black text-primary/40 mb-3 flex items-center gap-2">
+									<span className="h-px w-8 bg-primary/20" /> Notas de Cata
+								</h3>
+								<div className="bg-primary/[0.03] p-6 rounded-2xl border border-primary/5 italic text-gray-700 text-sm leading-relaxed">
+                  &quot;{wine.wine_details.notas_cata || "Notas de cata próximamente..."}&quot;
+								</div>
+							</section>
 
-            <div className="border-t pt-3 sm:pt-4 sm:block md:block lg:hidden">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
-                <span className="text-2xl md:text-3xl font-bold text-red-600" aria-label={`Precio: ${formatPrice(wine.precio)}`}>
-                  {formatPrice(wine.precio)}
-                </span>
-                <div className="text-left sm:text-right">
-                  <p className="text-xs md:text-sm text-gray-500">Precio por botella</p>
-                  <p className="text-xs text-green-600">✓ Disponible</p>
-                </div>
-              </div>
+							<div className="flex flex-wrap gap-2">
+								{wine.variedades.map((variedad) => (
+									<Badge key={variedad} variant="secondary" className="bg-primary/5 text-primary border-none font-bold uppercase text-[10px] tracking-widest px-3 py-1">
+										{variedad}
+									</Badge>
+								))}
+								<Badge variant="outline" className="border-primary/10 text-primary/60 font-medium uppercase text-[10px] tracking-widest px-3 py-1">
+                  Reserva Especial
+								</Badge>
+							</div>
 
-              <Button
-                onClick={handleAddToCart}
-                className="w-full bg-red-600 hover:bg-red-700 text-sm md:text-base"
-                aria-label={`Agregar ${wine.nombre} al carrito`}
-              >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Agregar al Carrito
-              </Button>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
+							{/* Mobile CTA */}
+							<div className="md:hidden pt-8 mt-8 border-t border-gray-100 space-y-6">
+								<div className="flex items-center justify-between">
+									<div className="flex flex-col">
+										<span className="text-3xl font-black text-primary">{formatPrice(wine.precio)}</span>
+										<p className="text-[10px] text-gray-400 uppercase font-bold">Impuestos incluidos</p>
+									</div>
+									<div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-8 w-8 rounded-lg text-primary hover:bg-white transition-all"
+											onClick={decrementQuantity}
+										>
+											<Minus className="h-4 w-4" />
+										</Button>
+										<span className="px-4 font-black text-primary min-w-[3rem] text-center">{quantity}</span>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-8 w-8 rounded-lg text-primary hover:bg-white transition-all"
+											onClick={incrementQuantity}
+										>
+											<Plus className="h-4 w-4" />
+										</Button>
+									</div>
+								</div>
+								<Button
+									onClick={handleAddToCart}
+									className="w-full bg-primary hover:bg-primary/90 h-12 rounded-xl font-black tracking-widest text-sm"
+								>
+                  AÑADIR A LA CAVA
+								</Button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
+	)
 }
+

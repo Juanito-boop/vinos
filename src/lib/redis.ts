@@ -2,12 +2,12 @@ import { createClient } from 'redis';
 
 const redisUrl = process.env.REDIS_URL;
 if (!redisUrl) {
-  throw new Error('Missing REDIS_URL environment variable');
+	throw new Error('Missing REDIS_URL environment variable');
 }
 
 declare global {
-  // eslint-disable-next-line no-var
-  var __redisClient: ReturnType<typeof createClient> | undefined;
+	 
+	var __redisClient: ReturnType<typeof createClient> | undefined;
 }
 
 /**
@@ -15,30 +15,30 @@ declare global {
  * module reloads (useful in dev/hot-reload environments).
  */
 export async function getRedisClient() {
-  if (global.__redisClient) return global.__redisClient;
+	if (global.__redisClient) return global.__redisClient;
 
-  const client = createClient({ url: redisUrl });
+	const client = createClient({ url: redisUrl });
 
-  client.on('error', (err) => {
-    // Keep a minimal log; don't throw here so callers can handle errors.
-    // Next.js will show server logs in the platform.
-    // If you want stricter behavior, rethrow or handle accordingly.
-    // eslint-disable-next-line no-console
-    console.error('Redis client error:', err);
-  });
+	client.on('error', (err) => {
+		// Keep a minimal log; don't throw here so callers can handle errors.
+		// Next.js will show server logs in the platform.
+		// If you want stricter behavior, rethrow or handle accordingly.
+		 
+		console.error('Redis client error:', err);
+	});
 
-  await client.connect();
-  global.__redisClient = client;
-  return client;
+	await client.connect();
+	global.__redisClient = client;
+	return client;
 }
 
 export async function disconnectRedisClient() {
-  if (global.__redisClient) {
-    try {
-      await global.__redisClient.disconnect();
-    } catch (e) {
-      // ignore
-    }
-    global.__redisClient = undefined;
-  }
+	if (global.__redisClient) {
+		try {
+			await global.__redisClient.disconnect();
+		} catch (e) {
+			// ignore
+		}
+		global.__redisClient = undefined;
+	}
 }

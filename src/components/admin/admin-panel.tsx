@@ -10,25 +10,25 @@ interface AdminPanelProps {
 }
 
 export function AdminPanel({ wines: initialWines }: AdminPanelProps) {
-  const { wines: realtimeWines, isLoading, error } = useWineRealtime();
-  const [wines, setWines] = useState(initialWines);
+	const { wines: realtimeWines, isLoading, error } = useWineRealtime();
+	const [wines, setWines] = useState(initialWines);
 
-  useEffect(() => {
-    if (realtimeWines && realtimeWines.length > 0) {
-      setWines(realtimeWines);
-    }
-  }, [realtimeWines]);
+	useEffect(() => {
+		if (realtimeWines && realtimeWines.length > 0) {
+			setWines(realtimeWines);
+		}
+	}, [realtimeWines]);
 
-  if (isLoading && (!wines || wines.length === 0)) {
-    return <div className="p-8 text-center">Cargando vinos...</div>;
-  }
-  if (error) {
-    return <div className="p-8 text-center text-red-500">Error cargando vinos: {error.message}</div>;
-  }
+	if (isLoading && (!wines || wines.length === 0)) {
+		return <div className="p-8 text-center">Cargando vinos...</div>;
+	}
+	if (error) {
+		return <div className="p-8 text-center text-red-500">Error cargando vinos: {error.message}</div>;
+	}
 
-  return (
-    <div className="bg-gradient-to-br from-white via-red-50 to-purple-50 rounded-lg shadow-lg border border-red-200 p-6">
-      <WineTable wines={wines} className="w-full" />
-    </div>
-  )
+	return (
+		<div className="bg-gradient-to-br from-white via-red-50 to-purple-50 rounded-lg shadow-lg border border-red-200 p-6">
+			<WineTable wines={wines} className="w-full" />
+		</div>
+	)
 }

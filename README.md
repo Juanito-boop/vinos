@@ -117,8 +117,6 @@ CREATE TABLE IF NOT EXISTS wine_details (
   bodega TEXT,
   notas_cata TEXT,
   tipo_crianza TEXT,
-  contenido_azucar DECIMAL(4,2),
-  contenido_carbonico DECIMAL(4,2),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
