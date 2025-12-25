@@ -12,10 +12,10 @@ import { CartIcon } from "../ui/cart"
 import { Minus, Plus } from "lucide-react"
 
 interface WineDetailModalProps {
-  wine: Wine | null
-  isOpen: boolean
-  onClose: () => void
-  onAddToCart: (wineId: string) => void
+	wine: Wine | null
+	isOpen: boolean
+	onClose: () => void
+	onAddToCart: (wineId: string) => void
 }
 
 export function WineDetailModal({ wine, isOpen, onClose, onAddToCart }: WineDetailModalProps) {
@@ -100,18 +100,19 @@ export function WineDetailModal({ wine, isOpen, onClose, onAddToCart }: WineDeta
 										onMouseLeave={() => setIsHovered(false)}
 									>
 										<CartIcon className="h-4 w-4" isHovered={isHovered} />
-                    AÑADIR A LA CAVA
+										AÑADIR A LA CAVA
 									</Button>
 								</div>
 							</div>
 						</div>
 
-						<div className="p-8 space-y-8 bg-white overflow-y-auto max-h-[calc(90vh-120px)] scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+						<div className="p-8 space-y-8 bg-white overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
 							<section>
 								<h3 className="text-xs uppercase tracking-[0.2em] font-black text-primary/40 mb-4 flex items-center gap-2">
 									<span className="h-px w-8 bg-primary/20" /> Perfil del vino
 								</h3>
-								<div className="grid grid-cols-2 gap-y-4 gap-x-6">
+								
+								<div className="grid grid-cols-2 gap-y-4 gap-x-6 my-3">
 									<div className="space-y-1">
 										<p className="text-[10px] uppercase font-bold text-gray-400">Variedades</p>
 										<p className="text-sm font-bold text-gray-800">{wine.variedades.join(", ")}</p>
@@ -131,6 +132,17 @@ export function WineDetailModal({ wine, isOpen, onClose, onAddToCart }: WineDeta
 										<p className="text-sm font-bold text-gray-800">{wine.nivel_alcohol}% Vol.</p>
 									</div>
 								</div>
+
+								<div className="flex flex-wrap gap-2">
+									{wine.variedades.map((variedad) => (
+										<Badge key={variedad} variant="secondary" className="bg-primary/5 text-primary border-none font-bold uppercase text-[10px] tracking-widest px-3 py-1">
+											{variedad}
+										</Badge>
+									))}
+									<Badge variant="outline" className="border-primary/10 text-primary/60 font-medium uppercase text-[10px] tracking-widest px-3 py-1">
+										Reserva Especial
+									</Badge>
+								</div>
 							</section>
 
 							<section>
@@ -147,20 +159,9 @@ export function WineDetailModal({ wine, isOpen, onClose, onAddToCart }: WineDeta
 									<span className="h-px w-8 bg-primary/20" /> Notas de Cata
 								</h3>
 								<div className="bg-primary/[0.03] p-6 rounded-2xl border border-primary/5 italic text-gray-700 text-sm leading-relaxed">
-                  &quot;{wine.wine_details.notas_cata || "Notas de cata próximamente..."}&quot;
+									&quot;{wine.wine_details.notas_cata || "Notas de cata próximamente..."}&quot;
 								</div>
 							</section>
-
-							<div className="flex flex-wrap gap-2">
-								{wine.variedades.map((variedad) => (
-									<Badge key={variedad} variant="secondary" className="bg-primary/5 text-primary border-none font-bold uppercase text-[10px] tracking-widest px-3 py-1">
-										{variedad}
-									</Badge>
-								))}
-								<Badge variant="outline" className="border-primary/10 text-primary/60 font-medium uppercase text-[10px] tracking-widest px-3 py-1">
-                  Reserva Especial
-								</Badge>
-							</div>
 
 							{/* Mobile CTA */}
 							<div className="md:hidden pt-8 mt-8 border-t border-gray-100 space-y-6">
@@ -193,7 +194,7 @@ export function WineDetailModal({ wine, isOpen, onClose, onAddToCart }: WineDeta
 									onClick={handleAddToCart}
 									className="w-full bg-primary hover:bg-primary/90 h-12 rounded-xl font-black tracking-widest text-sm"
 								>
-                  AÑADIR A LA CAVA
+									AÑADIR A LA CAVA
 								</Button>
 							</div>
 						</div>

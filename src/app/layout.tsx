@@ -16,11 +16,12 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
 	title: {
-		default: "Los Vinos - Wine Store",
+		default: "Los Vinos | Tienda de Vinos en Villa de Leyva, Boyacá",
 		template: "%s | Los Vinos"
 	},
-	description: "Descubre los mejores vinos internacionales en nuestra tienda online. Vinos tintos, blancos y rosados de las mejores bodegas del mundo.",
-	keywords: ["vinos", "tienda de vinos", "vinos online", "bodegas", "comprar vinos"],
+	applicationName: "Los Vinos",
+	description: "Tu tienda de vinos preferida en Villa de Leyva, Boyacá. Descubre los mejores vinos internacionales, tintos, blancos y rosados. Envío a domicilio.",
+	keywords: ["vinos Villa de Leyva", "tienda de vinos Boyacá", "Los Vinos Villa de Leyva", "vinos internacionales Colombia", "bodegas"],
 	authors: [{ name: "Los Vinos" }],
 	creator: "Los Vinos",
 	publisher: "Los Vinos",
@@ -29,14 +30,14 @@ export const metadata: Metadata = {
 		address: false,
 		telephone: false,
 	},
-	metadataBase: new URL('https://tu-dominio.com'),
+	metadataBase: new URL('https://wines-theta.vercel.app'),
 	alternates: {
 		canonical: '/',
 	},
 	openGraph: {
 		type: 'website',
 		locale: 'es_ES',
-		url: 'https://tu-dominio.com',
+		url: 'https://wines-theta.vercel.app',
 		siteName: 'Los Vinos',
 		title: 'Los Vinos - Tienda Online de Vinos Internacionales',
 		description: 'Descubre los mejores vinos internacionales en nuestra tienda online.',
@@ -85,7 +86,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
 	children,
 }: {
-  children: React.ReactNode
+	children: React.ReactNode
 }) {
 	return (
 		<html lang="es">
