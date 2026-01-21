@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useWineRealtime } from "@/hooks/useRealtimeWines"
-import { WineTable } from "../wine-table"
+import { WineTable } from "./WineTable"
 import type { Wine } from "@/types"
 
 interface AdminPanelProps {

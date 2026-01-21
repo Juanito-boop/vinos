@@ -30,6 +30,7 @@ export default function WineStore({ wines }: WineStoreProps) {
 	const [cartItemCount, setCartItemCount] = useState(0)
 	const [filteredWinesCount, setFilteredWinesCount] = useState(0)
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+	const [isLoading, setIsLoading] = useState(true)
 	const scrollPositions = useRef<Record<string, number>>({})
 	const prevViewRef = useRef<ViewType>(currentView)
 
@@ -42,6 +43,10 @@ export default function WineStore({ wines }: WineStoreProps) {
 			setCurrentView("store");
 			setViewInURL("store");
 		}
+
+		// Simular carga inicial si los vinos están vacíos inicialmente o para evitar el flash de empty state
+		const timer = setTimeout(() => setIsLoading(false), 500);
+		return () => clearTimeout(timer);
 	}, []);
 
 	// Sincronizar la vista con la URL solo en el cliente
@@ -116,12 +121,6 @@ export default function WineStore({ wines }: WineStoreProps) {
 								<TabsTrigger value="Vinos" className="rounded-lg px-6 py-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300">Vinos</TabsTrigger>
 								<TabsTrigger value="Comestibles" className="rounded-lg px-6 py-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300">Comestibles</TabsTrigger>
 							</TabsList>
-
-							{currentView === "store" && (
-								<div className="text-sm font-medium text-gray-500 bg-white/40 px-4 py-2 rounded-full border border-white/20">
-									<span className="text-primary font-bold">{filteredWinesCount}</span> productos encontrados
-								</div>
-							)}
 						</div>
 
 						<TabsContent value="Vinos" className="mt-0 outline-none">
@@ -134,6 +133,7 @@ export default function WineStore({ wines }: WineStoreProps) {
 								onFilteredWinesCountChange={setFilteredWinesCount}
 								isSidebarOpen={isSidebarOpen}
 								onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+								isLoading={isLoading}
 							/>
 						</TabsContent>
 						<TabsContent value="Comestibles" className="mt-0 outline-none">
@@ -185,15 +185,11 @@ export default function WineStore({ wines }: WineStoreProps) {
 				)}
 
 				{currentView === "admin" && (
-					<div className="bg-white/50 backdrop-blur-md rounded-3xl p-6 md:p-10 shadow-inner">
-						<AdminView wines={wines} />
-					</div>
+					<AdminView wines={wines} />
 				)}
 
 				{currentView === "cart" && (
-					<div className="bg-white/50 backdrop-blur-md rounded-3xl p-6 md:p-10 shadow-inner">
 						<CartView wines={wines} onBack={() => handleViewChange("store")} />
-					</div>
 				)}
 			</main>
 

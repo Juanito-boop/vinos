@@ -12,14 +12,15 @@ import { WineGrid } from "../wine-grid"
 import { useConsumibles } from "@/hooks/use-consumibles"
 
 interface StoreViewProps {
-  wines: Wine[]
-  searchTerm: string
-  onSearchChange: (term: string) => void
-  onFiltersClick: () => void
-  onCartItemCountChange: (count: number) => void
-  onFilteredWinesCountChange: (count: number) => void
-  isSidebarOpen: boolean
-  onSidebarToggle: () => void
+	wines: Wine[]
+	searchTerm: string
+	onSearchChange: (term: string) => void
+	onFiltersClick: () => void
+	onCartItemCountChange: (count: number) => void
+	onFilteredWinesCountChange: (count: number) => void
+	isSidebarOpen: boolean
+	onSidebarToggle: () => void
+	isLoading?: boolean
 }
 
 export function StoreView({
@@ -31,6 +32,7 @@ export function StoreView({
 	onFilteredWinesCountChange,
 	isSidebarOpen,
 	onSidebarToggle,
+	isLoading = false,
 }: StoreViewProps) {
 	const { addToCart, cartItemCount } = useCart(wines)
 	const filters = useFilters(wines)
@@ -38,47 +40,37 @@ export function StoreView({
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const { consumibles, isLoading: loadingConsumibles, error: errorConsumibles } = useConsumibles();
 
-	// Filtrar vinos basado en búsqueda y filtros
 	const filteredWines = useMemo(() => {
 		let filtered = filters.filteredWines
 
-		// Filtro por búsqueda
 		if (searchTerm) {
 			const searchLower = searchTerm.toLowerCase()
 			filtered = filtered.filter(
 				(wine) =>
 					wine.nombre.toLowerCase().includes(searchLower) ||
-          wine.wine_details.bodega.toLowerCase().includes(searchLower) ||
-          wine.variedades.some((variedad) =>
-          	variedad.toLowerCase().includes(searchLower)
-          ) ||
-          wine.wine_details.tipo_crianza.toLowerCase().includes(searchLower) ||
-          wine.pais_importacion.toLowerCase().includes(searchLower) ||
-          wine.precio.toString().includes(searchTerm)
+					wine.wine_details.bodega.toLowerCase().includes(searchLower) ||
+					wine.variedades.some((variedad) =>
+						variedad.toLowerCase().includes(searchLower)
+					) ||
+					wine.wine_details.tipo_crianza.toLowerCase().includes(searchLower) ||
+					wine.pais_importacion.toLowerCase().includes(searchLower) ||
+					wine.precio.toString().includes(searchTerm)
 			)
 		}
 
 		return filtered
 	}, [filters.filteredWines, searchTerm])
 
-	// Actualizar contador de elementos en el carrito
 	useEffect(() => {
 		onCartItemCountChange(cartItemCount)
 	}, [cartItemCount, onCartItemCountChange])
 
-	// Actualizar contador de vinos filtrados
 	useEffect(() => {
 		onFilteredWinesCountChange(filteredWines.length)
 	}, [filteredWines.length, onFilteredWinesCountChange])
 
-	// Estado para controlar cuántos productos mostrar (paginación por filas)
 	const [visibleRows, setVisibleRows] = useState(3)
-
-	// Determinar el número de columnas según el tamaño de pantalla
-	// Para simplificar, asumimos 4 columnas en 2xl, 3 en lg, 2 en sm, 1 en base
-	// Pero para la lógica, mostramos de a 3 filas (3*4=12, 3*3=9, etc)
-	// Usamos 12 como máximo por página para la experiencia más fluida
-	const itemsPerRow = 4 // Puedes ajustar esto si quieres que sea responsivo con JS
+	const itemsPerRow = 4
 	const itemsToShow = visibleRows * itemsPerRow
 
 	// Productos a mostrar actualmente
@@ -140,16 +132,23 @@ export function StoreView({
 
 			{/* Contenido principal */}
 			<main className="flex-1 overflow-y-auto">
-				{filteredWines.length === 0 ? (
+				{isLoading ? (
+					<WineGrid
+						wines={[]}
+						onAddToCart={handleAddToCart}
+						onClick={handleWineClick}
+						isLoading={true}
+					/>
+				) : filteredWines.length === 0 ? (
 					<div className="text-center py-12">
 						<h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No se encontraron vinos
+							No se encontraron vinos
 						</h3>
 						<p className="text-gray-600 mb-4">
-              Intenta ajustar tus filtros o términos de búsqueda
+							Intenta ajustar tus filtros o términos de búsqueda
 						</p>
 						<Button onClick={filters.clearFilters} variant="outline">
-              Limpiar filtros
+							Limpiar filtros
 						</Button>
 					</div>
 				) : (
@@ -167,7 +166,7 @@ export function StoreView({
 									variant="outline"
 									className="max-w-60 w-full bg-primary hover:bg-primary/90 text-white hover:text-white"
 								>
-                  Mostrar más
+									Mostrar más
 								</Button>
 							</div>
 						)}

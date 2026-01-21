@@ -156,7 +156,7 @@ export function CartView({ onBack, wines }: CartViewProps) {
 
 	if (cart.cartItems.length === 0) {
 		return (
-			<div className="min-h-screen bg-[#fcfaf8]">
+			<div className="min-h-screen bg-[#f0f0f0]">
 				<div className="container mx-auto px-4 py-6">
 					<div className="grid grid-rows-2 grid-cols-2 lg:grid-cols-4 lg:grid-rows-1 gap-4 mb-2">
 						<h1 className="text-2xl font-bold text-gray-900 col-span-2 lg:col-start-2 mx-auto">Carrito de Compras</h1>
@@ -185,15 +185,15 @@ export function CartView({ onBack, wines }: CartViewProps) {
 	}
 
 	return (
-		<div className="min-h-screen bg-[#fcfaf8]">
+		<div className="min-h-screen bg-[#f0f0f0]">
 			<div className="container mx-auto px-4 py-6">
 				<div className="grid grid-rows-2 grid-cols-2 lg:grid-cols-4 lg:grid-rows-1 gap-4 mb-2">
 					<h1 className="text-2xl font-bold text-gray-900 col-span-2 lg:col-start-2 mx-auto">Carrito de Compras</h1>
-					<Button variant="outline" onClick={onBack} className="flex items-center gap-2 lg:col-start-1 lg:row-start-1">
+					<Button variant="outline" onClick={onBack} className="flex items-center gap-2 lg:col-start-1 lg:row-start-1 ">
 						<ArrowLeft className="h-4 w-4" />
 						Volver
 					</Button>
-					<Badge variant="outline" className="mx-auto px-6 py-2 bg-primary text-white font-black uppercase tracking-widest rounded-full border-none shadow-lg">
+					<Badge variant="outline" className="mx-auto px-4 sm:px-6 py-2 bg-primary text-white font-black uppercase tracking-widest rounded-md border-none shadow-lg whitespace-nowrap text-[10px] sm:text-xs">
 						{cart.cartItemCount} {cart.cartItemCount === 1 ? 'artículo' : 'artículos'}
 					</Badge>
 				</div>
@@ -212,60 +212,71 @@ export function CartView({ onBack, wines }: CartViewProps) {
 							if (!wine) return null
 
 							return (
-								<Card key={item.id_vino} className="overflow-hidden">
-									<CardContent className="p-4 sm:p-6">
-										<div className="flex flex-col sm:flex-row sm:items-center gap-4">
-											<div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 mx-auto sm:mx-0">
+								<Card key={item.id_vino} className="overflow-hidden border-none shadow-sm bg-white/60 backdrop-blur-sm rounded-2xl">
+									<CardContent className="p-4">
+										<div className="flex gap-4">
+											{/* Lado izquierdo: Imagen */}
+											<div className="w-20 h-24 bg-gray-50 rounded-xl flex-shrink-0 flex items-center justify-center p-2 border border-gray-100">
 												{wine.url_imagen && (
 													<img
 														src={wine.url_imagen}
 														alt={wine.nombre}
-														className="w-full h-full object-cover rounded-lg"
+														className="max-w-full max-h-full object-contain drop-shadow-sm"
 													/>
 												)}
 											</div>
 
-											<div className="flex-1 min-w-0 w-full">
-												<h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">
-													{wine.nombre} {wine.variedades.join(", ")} {wine.capacidad < 750 ? wine.capacidad : ""}
-												</h3>
-												<p className="text-sm text-gray-600 mb-1 sm:mb-2">
-													{wine.wine_details.bodega} • {wine.pais_importacion}
-												</p>
-												<p className="text-xl font-black text-start text-primary tracking-tight">
-													{formatPrice(wine.precio)}
-												</p>
-											</div>
-
-											<div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-4 mt-2 sm:mt-0 w-full sm:w-auto justify-between">
-												<div className="flex items-center gap-2">
-													<Button
-														variant="outline"
-														size="sm"
-														onClick={() => cart.updateQuantity(item.id_vino, item.quantity - 1)}
-														disabled={item.quantity <= 1}
-													>
-														<Minus className="h-4 w-4" />
-													</Button>
-													<span className="w-10 text-center font-medium">{item.quantity}</span>
-													<Button
-														variant="outline"
-														size="sm"
-														onClick={() => cart.updateQuantity(item.id_vino, item.quantity + 1)}
-													>
-														<Plus className="h-4 w-4" />
-													</Button>
+											{/* Lado derecho: Info y Acciones */}
+											<div className="flex-1 flex flex-col justify-between min-w-0">
+												<div>
+													<h3 className="font-black text-sm text-gray-900 leading-tight mb-1 line-clamp-2">
+														{wine.nombre} {wine.variedades.join(", ")}
+													</h3>
+													<p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+														{wine.wine_details.bodega} • {wine.pais_importacion}
+													</p>
 												</div>
+
+												<div className="flex items-end justify-between mt-2">
+													<p className="text-lg font-black text-primary tracking-tighter">
+														{formatPrice(wine.precio)}
+													</p>
+												</div>
+											</div>
+										</div>
+
+										{/* Fila inferior de acciones (Solo móvil/Tablet) */}
+										<div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100/50">
+											<div className="flex items-center bg-gray-100 rounded-xl p-0.5 border border-gray-200">
 												<Button
 													variant="ghost"
-													size="sm"
-													onClick={() => cart.removeFromCart(item.id_vino)}
-													className="text-destructive hover:text-destructive hover:bg-destructive/5 transition-colors font-bold text-xs uppercase tracking-widest"
+													size="icon"
+													className="h-8 w-8 rounded-lg text-primary hover:bg-white transition-all"
+													onClick={() => cart.updateQuantity(item.id_vino, item.quantity - 1)}
+													disabled={item.quantity <= 1}
 												>
-													<Trash2 className="h-4 w-4 mr-2" />
-													Eliminar
+													<Minus className="h-3.5 w-3.5" />
+												</Button>
+												<span className="px-3 font-black text-primary min-w-[2.5rem] text-center text-sm">{item.quantity}</span>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8 rounded-lg text-primary hover:bg-white transition-all"
+													onClick={() => cart.updateQuantity(item.id_vino, item.quantity + 1)}
+												>
+													<Plus className="h-3.5 w-3.5" />
 												</Button>
 											</div>
+
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={() => cart.removeFromCart(item.id_vino)}
+												className="text-destructive hover:text-destructive hover:bg-destructive/5 font-black text-[10px] uppercase tracking-widest pl-2 pr-3 h-9 rounded-xl transition-all border border-transparent hover:border-destructive/10"
+											>
+												<Trash2 className="h-4 w-4 mr-2" />
+												Eliminar
+											</Button>
 										</div>
 									</CardContent>
 								</Card>
@@ -280,22 +291,23 @@ export function CartView({ onBack, wines }: CartViewProps) {
 								<CardTitle>Resumen del Pedido</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="grid grid-cols-4 gap-2 text-sm px-4 text-gray-800 font-semibold border-b pb-2">
-									<span className="text-left col-span-2">Producto</span>
-									<span className="text-center col-start-3">Cantidad</span>
-									<span className="text-right col-start-4">Subtotal</span>
+								<div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-black text-gray-400 border-b border-gray-100 pb-2 px-1">
+									<span className="flex-1">Producto</span>
+									<span className="w-16 text-center">Cant.</span>
+									<span className="w-20 text-right">Subtotal</span>
 								</div>
-								<div className="divide-y">
+								<div className="divide-y divide-gray-50 max-h-[40vh] overflow-y-auto">
 									{cart.cartItems.map((item) => {
 										const wine = wines.find(w => w.id_vino === item.id_vino);
 										if (!wine) return null;
 										return (
-											<div key={item.id_vino} className="grid grid-cols-4 gap-2 text-sm px-4 text-gray-800 items-center py-1">
-												<span className="text-left truncate col-span-2 flex justify-between">
-													<p>{wine.nombre} {wine.variedades.join(", ")}</p> {wine.capacidad} ml
-												</span>
-												<span className="text-center col-start-3">x{item.quantity}</span>
-												<span className="text-right col-start-4">{formatPrice(wine.precio * item.quantity)}</span>
+											<div key={item.id_vino} className="flex items-center justify-between py-3 px-1 gap-3">
+												<div className="flex-1 min-w-0">
+													<p className="text-xs font-bold text-gray-800 truncate">{wine.nombre}</p>
+													<p className="text-[10px] text-gray-400 font-medium truncate">{wine.variedades.join(", ")}</p>
+												</div>
+												<span className="w-16 text-center text-xs font-black text-primary bg-primary/5 py-1 rounded-lg">x{item.quantity}</span>
+												<span className="w-20 text-right text-xs font-black text-gray-900">{formatPrice(wine.precio * item.quantity)}</span>
 											</div>
 										);
 									})}

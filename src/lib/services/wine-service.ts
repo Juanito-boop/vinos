@@ -2,58 +2,60 @@ import { supabase } from "@/lib/supabase"
 import type { Wine } from "@/types"
 
 export class WineService {
-	static async getAllWines(): Promise<Wine[]> {
-		try {
-			// WineService: Fetching all wines...
-			
-			const { data, error } = await supabase
-				.from("wines")
-				.select(`
-					*,
-					wine_details (
-						id_detalle,
-						id_vino,
-						bodega,
-						notas_cata,
-						tipo_crianza
-					)
-				`)
-				.order("bodega", { referencedTable: 'wine_details', ascending: true })
-				.order("nombre")
-				.order("variedades", { ascending: true })
-				.order("capacidad", { ascending: false })
+	static async getAllWines(retries = 3): Promise<Wine[]> {
+		for (let attempt = 1; attempt <= retries; attempt++) {
+			try {
+				const { data, error } = await supabase
+					.from("wines")
+					.select(`
+						*,
+						wine_details (
+							id_detalle,
+							id_vino,
+							bodega,
+							notas_cata,
+							tipo_crianza
+						)
+					`)
+					.order("bodega", { referencedTable: 'wine_details', ascending: true })
+					.order("nombre")
+					.order("variedades", { ascending: true })
+					.order("capacidad", { ascending: false })
 
-			if (error) {
-				console.error("WineService: Supabase error:", error)
-				throw new Error(`Error fetching wines: ${error.message || 'Unknown error'}`)
-			}
+				if (error) {
+					// Usar warn para intentos fallidos que no son el último
+					if (attempt < retries) {
+						console.warn(`WineService: Fallo temporal en Supabase (intento ${attempt}/${retries}). Reintentando...`, error.message)
+					} else {
+						console.error(`WineService: Error fatal en Supabase tras ${retries} intentos:`, error)
+					}
+					throw error
+				}
 
-			if (!data) {
-				console.warn('WineService: No data returned from Supabase')
-				return []
-			}
+				if (!data) {
+					console.warn(`WineService: No se devolvieron datos de Supabase (intento ${attempt}/${retries})`)
+					return []
+				}
 
-			const normalizedWines = data.map((wine) => ({
-				...wine,
-				wine_details: wine.wine_details?.[0] || null,
-			}))
-			
-			return normalizedWines
-		} catch (err) {
-			console.error("WineService: Error in getAllWines:", err)
-			
-			// Crear un error más informativo
-			let errorMessage = 'Error fetching wines'
-			if (err instanceof Error) {
-				errorMessage = err.message
-			} else if (typeof err === 'string') {
-				errorMessage = err
-			} else if (err && typeof err === 'object') {
-				errorMessage = JSON.stringify(err)
+				return data.map((wine) => ({
+					...wine,
+					wine_details: wine.wine_details?.[0] || null,
+				}))
+			} catch (err) {
+				const errorMessage = err instanceof Error ? err.message : String(err)
+				
+				if (attempt < retries) {
+					console.warn(`WineService: Reintentando carga de vinos (${attempt}/${retries}) debido a: ${errorMessage}`)
+					// Esperar un poco antes de reintentar (aumento exponencial corto)
+					await new Promise(resolve => setTimeout(resolve, 800 * attempt))
+					continue
+				}
+				
+				console.error(`WineService: Error definitivo tras ${retries} intentos:`, err)
+				throw new Error(errorMessage)
 			}
-			
-			throw new Error(errorMessage)
 		}
+		return []
 	}
 
 	static async getWineById(id: string): Promise<Wine | null> {

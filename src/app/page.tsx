@@ -58,22 +58,12 @@ export const revalidate = 60;
 
 export default async function HomePage() {
 	const wines = await WineService.getAllWines();
+
 	return (
 		<main className="min-h-screen">
-			{Array.isArray(wines) ? (
-				<ConsumiblesRealtimeProvider>
-					<WineStore wines={wines} />
-				</ConsumiblesRealtimeProvider>
-			) : (
-				<div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8">
-					<div className="bg-destructive/5 border border-destructive/20 p-8 rounded-[2rem] max-w-md">
-						<h2 className="text-2xl font-black text-destructive mb-4 tracking-tight">Vaya, algo salió mal</h2>
-						<p className="text-gray-600 font-medium">
-              No pudimos cargar nuestra selección de vinos en este momento. Por favor, refresca la página o inténtalo de nuevo más tarde.
-						</p>
-					</div>
-				</div>
-			)}
+			<ConsumiblesRealtimeProvider>
+				<WineStore wines={wines} />
+			</ConsumiblesRealtimeProvider>
 		</main>
 	)
 }

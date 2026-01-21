@@ -6,11 +6,11 @@ import { DualRangeSlider } from "./ui/dual-range-slider"
 import { formatPrice } from "@/utils/price"
 
 interface PriceRangeSliderProps {
-  minPrice: number
-  maxPrice: number
-  currentMin: number
-  currentMax: number
-  onRangeChange: (min: number, max: number) => void
+	minPrice: number
+	maxPrice: number
+	currentMin: number
+	currentMax: number
+	onRangeChange: (min: number, max: number) => void
 }
 
 export function PriceRangeSlider({
@@ -37,13 +37,12 @@ export function PriceRangeSlider({
 	}
 
 	return (
-		<Card className="border-0">
-			<CardHeader className="p-0 pb-3">
-				<CardTitle className="text-sm font-medium">Rango de Precio</CardTitle>
+		<Card className="border-0 shadow-none bg-transparent">
+			<CardHeader className="p-0 pb-0">
+				<CardTitle className="text-xs font-black uppercase tracking-widest text-primary/60">Rango de Precio</CardTitle>
 			</CardHeader>
-			<CardContent className="space-y-4 p-0">
-				{/* Slider de rango usando DualRangeSlider */}
-				<div className="relative pt-6 px-4">
+			<CardContent className="space-y-10 p-0 mt-4">
+				<div className="relative px-2">
 					<DualRangeSlider
 						value={[localMin, localMax]}
 						onValueChange={handleSliderChange}
@@ -51,24 +50,19 @@ export function PriceRangeSlider({
 						max={maxPrice}
 						step={10000}
 						className="w-full"
-						label={(value) => (
-							<span className="text-xs text-muted-foreground bg-background px-1 rounded">
-								{formatPrice(value || 0)}
-							</span>
-						)}
+						label={(value) => formatPrice(value || 0)}
 						labelPosition="top"
 					/>
-          
-					{/* Etiquetas de precio mínimo y máximo */}
-					<div className="flex justify-between mt-2 text-xs text-muted-foreground">
-						<span>{formatPrice(minPrice)}</span>
-						<span>{formatPrice(maxPrice)}</span>
-					</div>
 				</div>
 
-				{/* Valores actuales */}
-				<div className="text-center text-sm text-muted-foreground bg-gray-50 py-2 rounded">
-					{formatPrice(localMin)} - {formatPrice(localMax)}
+				{/* Valores actuales en un diseño más premium */}
+				<div className="flex flex-col items-center gap-1 py-3 px-4 rounded-2xl bg-primary/[0.03] border border-primary/5">
+					<span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Selección actual</span>
+					<div className="flex items-center gap-3">
+						<span className="text-sm font-black text-primary">{formatPrice(localMin)}</span>
+						<div className="h-px w-4 bg-primary/20" />
+						<span className="text-sm font-black text-primary">{formatPrice(localMax)}</span>
+					</div>
 				</div>
 			</CardContent>
 		</Card>
