@@ -141,7 +141,7 @@ export function FiltersSidebar(props: FiltersSidebarProps) {
 
 			<aside
 				aria-label="Filtros de productos"
-				className={`bg-white/90 rounded-[2rem] backdrop-blur-xl border border-border/30 shadow-xl flex flex-col w-80 fixed inset-0 lg:static lg:translate-x-0 lg:h-auto transition-transform duration-300 z-50 lg:z-auto ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+				className={`bg-white/90 rounded-2xl backdrop-blur-xl border border-border/30 shadow-xl flex flex-col w-80 fixed inset-0 lg:static lg:translate-x-0 lg:h-auto transition-transform duration-300 z-50 lg:z-auto ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
 			>
 				<div className="flex flex-col h-full px-6 py-6">
 					{/* Header */}
