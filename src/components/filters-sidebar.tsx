@@ -112,7 +112,7 @@ function getColorIcon(color: string) {
 				: color === "Blanco"
 					? "bg-yellow-200 border border-yellow-400"
 					: "bg-pink-300"
-				}`}
+			}`}
 		/>
 	)
 }

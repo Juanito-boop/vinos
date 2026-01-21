@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Consumibles } from '@/types';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 export default function EditConsumibleModal({
 	consumible,
@@ -165,8 +166,15 @@ export default function EditConsumibleModal({
 							/>
 							{imagePreview && (
 								<div className="relative">
-									<img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded" />
-									<button type="button" onClick={handleRemoveImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X size={14} /></button>
+									<Image src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded" width={80} height={80} />
+									<Button
+										type="button"
+										onClick={handleRemoveImage}
+										className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+										aria-label="Remove image"
+									>
+										<X size={14} />
+									</Button>
 								</div>
 							)}
 						</div>

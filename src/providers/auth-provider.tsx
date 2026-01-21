@@ -1,6 +1,6 @@
 "use client"
 // src/providers/auth-provider.tsx
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -11,24 +11,22 @@ interface ExtendedUser extends User {
 
 const AuthContext = createContext<any>(null);
 
+// Función para verificar si un usuario es administrador
+function checkUserRole(user: User): ExtendedUser {
+	const extendedUser = user as ExtendedUser;
+	extendedUser.isAdmin = user.user_metadata?.role === 'admin' ||
+		user.user_metadata?.isAdmin === true ||
+		user.email === 'acevedojuanesteban.colombia@gmail.com';
+	return extendedUser;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [user, setUser] = useState<ExtendedUser | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isProcessingMagicLink, setIsProcessingMagicLink] = useState(false);
 
-	// Función para verificar si un usuario es administrador
-	const checkUserRole = (user: User): ExtendedUser => {
-		const extendedUser = user as ExtendedUser;
-		// Verificar en user_metadata si es admin
-		extendedUser.isAdmin = user.user_metadata?.role === 'admin' || 
-													user.user_metadata?.isAdmin === true ||
-													user.email === 'acevedojuanesteban.colombia@gmail.com'; // Email específico como admin
-		
-		return extendedUser;
-	};
-
 	// Función para procesar el magic link desde el hash de la URL
-	const processMagicLink = async () => {
+	const processMagicLink = useCallback(async () => {
 		if (typeof window === 'undefined') return;
 
 		const hash = window.location.hash;
@@ -57,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 					const extendedUser = checkUserRole(data.session.user);
 					setUser(extendedUser);
 					toast.success('¡Sesión iniciada correctamente!');
-					
+
 					// Limpiar el hash de la URL
 					window.history.replaceState(null, '', window.location.pathname + window.location.search);
 				}
@@ -68,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				setIsProcessingMagicLink(false);
 			}
 		}
-	};
+	}, [checkUserRole]);
 
 	useEffect(() => {
 		// Procesar magic link al cargar la página
@@ -95,18 +93,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		return () => {
 			listener?.subscription.unsubscribe();
 		};
-	}, []);
+	}, [processMagicLink, checkUserRole]);
 
 	const login = async (email: string) => {
 		setIsLoading(true);
 		try {
-			const { error } = await supabase.auth.signInWithOtp({ 
+			const { error } = await supabase.auth.signInWithOtp({
 				email,
 				options: {
 					emailRedirectTo: `${window.location.origin}${window.location.pathname}`
 				}
 			});
-			
+
 			if (error) {
 				throw error;
 			} else {
@@ -136,20 +134,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const updateUserRole = async (userId: string, isAdmin: boolean) => {
 		try {
 			const { error } = await supabase.auth.admin.updateUserById(userId, {
-				user_metadata: { 
+				user_metadata: {
 					role: isAdmin ? 'admin' : 'user',
-					isAdmin: isAdmin 
+					isAdmin: isAdmin
 				}
 			});
-			
+
 			if (error) throw error;
-			
+
 			// Actualizar el usuario local si es el usuario actual
 			if (user?.id === userId) {
 				const updatedUser = { ...user, isAdmin };
 				setUser(updatedUser);
 			}
-			
+
 			toast.success(`Usuario ${isAdmin ? 'promovido a administrador' : 'degradado a usuario'}`);
 		} catch (error: any) {
 			console.error('Error al actualizar rol:', error);
@@ -159,12 +157,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ 
-			user, 
+		<AuthContext.Provider value={{
+			user,
 			isLoggedIn: !!user,
-			login, 
-			logout, 
-			isLoading, 
+			login,
+			logout,
+			isLoading,
 			isProcessingMagicLink,
 			updateUserRole
 		}}>

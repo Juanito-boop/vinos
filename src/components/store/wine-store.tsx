@@ -14,6 +14,7 @@ import { Button } from "../ui/button"
 import type { Wine } from "@/types"
 import { useConsumibles } from "@/hooks/use-consumibles"
 import { formatPrice } from "@/utils/price"
+import Image from "next/image"
 
 type ViewType = "store" | "admin" | "cart"
 
@@ -158,10 +159,11 @@ export default function WineStore({ wines }: WineStoreProps) {
 										<Card key={item.id} className="flex flex-col items-center bg-white/80 backdrop-blur-sm border-none shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden rounded-2xl">
 											<CardHeader className="flex flex-col items-center w-full p-0">
 												<div className="relative w-full h-48 overflow-hidden">
-													<img
+													<Image
 														src={item.url_imagen}
 														alt={item.nombre}
 														className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+														fill
 													/>
 													<div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 												</div>
@@ -189,7 +191,7 @@ export default function WineStore({ wines }: WineStoreProps) {
 				)}
 
 				{currentView === "cart" && (
-						<CartView wines={wines} onBack={() => handleViewChange("store")} />
+					<CartView wines={wines} onBack={() => handleViewChange("store")} />
 				)}
 			</main>
 

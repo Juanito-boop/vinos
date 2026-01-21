@@ -1,155 +1,231 @@
 import { useRef } from "react"
-import * as XLSX from "xlsx"
-import { Wine } from "@/types"
+import ExcelJS from "exceljs"
+import { saveAs } from "file-saver"
 import { toast } from "sonner"
-import { mapWinesToExcel, mapExcelToWines } from "../utils/excelMappers"
+import { Wine } from "@/types"
+import { mapExcelToWines } from "../utils/excelMappers"
 
-export function useWineExcel(wines: Wine[], onWinesChange?: (wines: Wine[]) => void) {
-  const inputRef = useRef<HTMLInputElement>(null)
+export function useWineExcel(
+	wines: Wine[],
+	onWinesChange?: (wines: Wine[]) => void
+) {
+	const inputRef = useRef<HTMLInputElement>(null)
 
-  const exportToExcel = () => {
-    try {
-      const flatData = mapWinesToExcel(wines)
-      const ws = XLSX.utils.json_to_sheet(flatData)
+	/* =======================
+     EXPORTAR A EXCEL
+     ======================= */
+	const exportToExcel = async () => {
+		try {
+			const workbook = new ExcelJS.Workbook()
+			const sheet = workbook.addWorksheet("Vinos")
 
-      // Get data range
-      const range = XLSX.utils.decode_range(ws["!ref"] || "A1")
+			/* ---------- Columnas ---------- */
+			sheet.columns = [
+				{ header: "id_vino", key: "id_vino", width: 20 },
+				{ header: "id_detalle", key: "id_detalle", width: 20 },
 
-      // Configure protection for all cells (initially unlocked)
-      for (let row = range.s.r; row <= range.e.r; row++) {
-        for (let col = range.s.c; col <= range.e.c; col++) {
-          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
-          if (!ws[cellAddress]) continue
+				{ header: "nombre", key: "nombre", width: 20 },
+				{ header: "precio", key: "precio", width: 15 },
+				{ header: "descripcion", key: "descripcion", width: 30 },
+				{ header: "nivel_alcohol", key: "nivel_alcohol", width: 15 },
+				{ header: "variedades", key: "variedades", width: 25 },
+				{ header: "pais_importacion", key: "pais_importacion", width: 20 },
+				{ header: "color_vino", key: "color_vino", width: 15 },
+				{ header: "stock", key: "stock", width: 10 },
+				{ header: "capacidad", key: "capacidad", width: 15 },
+				{ header: "bodega", key: "bodega", width: 20 },
+				{ header: "notas_cata", key: "notas_cata", width: 30 },
+				{ header: "tipo_crianza", key: "tipo_crianza", width: 20 },
+			]
 
-          // Unlock all cells by default
-          if (!ws[cellAddress].s) ws[cellAddress].s = {}
-          ws[cellAddress].s.protection = { locked: false }
-        }
-      }
+			/* ---------- Filas ---------- */
+			wines.forEach((w) => {
+				sheet.addRow([
+					w.id_vino,
+					w.wine_details.id_detalle,
+					w.nombre,
+					w.precio,
+					w.descripcion,
+					w.nivel_alcohol,
+					w.variedades.join(", "),
+					w.pais_importacion,
+					w.color_vino,
+					w.stock,
+					w.capacidad,
+					w.wine_details.bodega,
+					w.wine_details.notas_cata,
+					w.wine_details.tipo_crianza,
+				])
+			})
 
-      // Lock specifically the "id vino" (column A) and "id detalle" (column L) columns
-      const protectedColumns = [0, 11] // Column A (id vino) and column L (id detalle)
+			/* ---------- Desbloquear todo ---------- */
+			sheet.eachRow({ includeEmpty: true }, (row) => {
+				row.eachCell({ includeEmpty: true }, (cell) => {
+					cell.protection = { locked: false }
+				})
+			})
 
-      for (let row = range.s.r; row <= range.e.r; row++) {
-        protectedColumns.forEach((col) => {
-          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
-          if (ws[cellAddress]) {
-            if (!ws[cellAddress].s) ws[cellAddress].s = {}
-            ws[cellAddress].s.protection = { locked: true }
+			/* ---------- Bloquear + ocultar A y B ---------- */
+			;[1, 2].forEach((colIndex) => {
+				const col = sheet.getColumn(colIndex)
+				col.hidden = true
 
-            // Add background color to indicate it's locked
-            ws[cellAddress].s.fill = {
-              fgColor: { rgb: "FFE6E6" },
-              bgColor: { rgb: "FFE6E6" },
-            }
-          }
-        })
-      }
+				col.eachCell({ includeEmpty: true }, (cell) => {
+					cell.protection = { locked: true }
+				})
+			})
 
-      // Configure worksheet protection
-      ws["!protect"] = {
-        password: "admin123",
-        selectLockedCells: true,
-        selectUnlockedCells: true,
-        formatCells: false,
-        formatColumns: false,
-        formatRows: false,
-        insertColumns: false,
-        insertRows: false,
-        insertHyperlinks: false,
-        deleteColumns: false,
-        deleteRows: false,
-        sort: false,
-        autoFilter: false,
-        pivotTables: false,
-      }
+			/* ---------- Congelar columnas (A,B,C) y encabezado ---------- */
+			sheet.views = [
+				{
+					state: "frozen",
+					xSplit: 3, // A, B, C
+					ySplit: 1, // header
+				},
+			]
 
-      const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, "Vinos")
-      XLSX.writeFile(wb, "inventario_vinos.xlsx")
+			/* ------------------- Auto-ajustar columnas ------------------- */
+			const autoFitColumns = (sheet: ExcelJS.Worksheet, columns: number[]) => {
+				columns.forEach((colIndex) => {
+					const column = sheet.getColumn(colIndex)
 
-      toast.success("Inventario exportado exitosamente", {
-        description: "Las columnas ID están protegidas contra edición",
-        action: {
-          label: "cerrar",
-          onClick: () => "",
-        },
-      })
-    } catch (error) {
-      toast.error("Error al exportar el inventario", {
-        description: "Por favor, intenta nuevamente más tarde.",
-        action: {
-          label: "cerrar",
-          onClick: () => "",
-        },
-      })
-    }
-  }
+					let maxLength =
+            column.header ? String(column.header).length : 10
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+					column.eachCell({ includeEmpty: true }, (cell) => {
+						if (cell.value) {
+							const length = String(cell.value).length
+							if (length > maxLength) {
+								maxLength = length
+							}
+						}
+					})
 
-    try {
-      const data = await file.arrayBuffer()
-      const workbook = XLSX.read(data, { type: "array" })
-      const sheet = workbook.Sheets[workbook.SheetNames[0]]
-      const json = XLSX.utils.sheet_to_json<any>(sheet)
+					column.width = Math.min(maxLength + 2, 45)
+				})
+			}
 
-      const imported = mapExcelToWines(json)
+			autoFitColumns(sheet, [3, 7, 9, 12])
 
-      const errores = imported.filter(
-        (w) =>
-          !w.nombre ||
+			/* ---------- Crear tabla ---------- */
+			sheet.addTable({
+				name: "TablaVinos",
+				ref: "A1",
+				headerRow: true,
+				totalsRow: false,
+				style: {
+					theme: "TableStyleMedium9",
+					showRowStripes: true,
+				},
+				columns: sheet.columns.map((c) => ({
+					name: String(c.header),
+				})),
+				rows: wines.map((w) => [
+					w.id_vino,
+					w.wine_details.id_detalle,
+					w.nombre,
+					w.precio,
+					w.descripcion,
+					w.nivel_alcohol,
+					w.variedades.join(", "),
+					w.pais_importacion,
+					w.color_vino,
+					w.stock,
+					w.capacidad,
+					w.wine_details.bodega,
+					w.wine_details.notas_cata,
+					w.wine_details.tipo_crianza,
+				]),
+			})
+
+			/* ---------- Proteger hoja ---------- */
+			await sheet.protect("admin123", {
+				selectLockedCells: false,
+				selectUnlockedCells: true,
+				autoFilter: true,
+				sort: true,
+				insertRows: true,
+				deleteRows: true,
+			})
+
+			/* ---------- Descargar ---------- */
+			const buffer = await workbook.xlsx.writeBuffer()
+			saveAs(new Blob([buffer]), "inventario_vinos.xlsx")
+
+			toast.success("Inventario exportado", {
+				description: "IDs ocultos, bloqueados y nombre fijo",
+			})
+		} catch {
+			toast.error("Error al exportar el inventario")
+		}
+	}
+
+	/* =======================
+     IMPORTAR DESDE EXCEL
+     ======================= */
+	const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+
+		try {
+			const buffer = await file.arrayBuffer()
+			const workbook = new ExcelJS.Workbook()
+			await workbook.xlsx.load(buffer)
+
+			const sheet = workbook.worksheets[0]
+			const headers = sheet.getRow(1).values as string[]
+
+			const json = sheet
+				.getRows(2, sheet.rowCount - 1)!
+				.map((row) => {
+					const obj: any = {}
+					headers.forEach((h, i) => {
+						if (!h) return
+						obj[h] = row.getCell(i).value
+					})
+					return obj
+				})
+
+			/* ---------- Ignorar IDs ---------- */
+			const sanitized = json.map(
+				({ id_vino, id_detalle, ...rest }) => rest
+			)
+
+			const imported = mapExcelToWines(sanitized)
+
+			const errores = imported.filter(
+				(w) =>
+					!w.nombre ||
           typeof w.stock !== "number" ||
           typeof w.precio !== "number" ||
           typeof w.nivel_alcohol !== "number" ||
           isNaN(w.stock) ||
           isNaN(w.precio) ||
-          isNaN(w.nivel_alcohol),
-      )
+          isNaN(w.nivel_alcohol)
+			)
 
-      if (errores.length > 0) {
-        toast.error("Error al importar el inventario", {
-          description: "Error en el archivo: verifica que los campos numéricos sean correctos.",
-          action: {
-            label: "cerrar",
-            onClick: () => ""
-          },
-        })
-        return
-      }
+			if (errores.length > 0) {
+				toast.error("Error al importar", {
+					description: "Verifica los campos numéricos",
+				})
+				return
+			}
 
-      if (onWinesChange) {
-        onWinesChange(imported)
-      }
+			onWinesChange?.(imported)
 
-      toast.success("Inventario", {
-        description: `${imported.length} vinos importados exitosamente`,
-        action: {
-          label: "cerrar",
-          onClick: () => ""
-        },
-      })
+			toast.success("Inventario importado", {
+				description: `${imported.length} vinos cargados`,
+			})
 
-      // Reset file input
-      if (inputRef.current) {
-        inputRef.current.value = ""
-      }
-    } catch (error) {
-      toast.error("Error al importar el inventario", {
-        description: "Error al procesar el archivo Excel.",
-        action: {
-          label: "cerrar",
-          onClick: () => ""
-        },
-      })
-    }
-  }
+			if (inputRef.current) inputRef.current.value = ""
+		} catch {
+			toast.error("Error al procesar el archivo Excel")
+		}
+	}
 
-  return {
-    inputRef,
-    exportToExcel,
-    handleImport,
-  }
+	return {
+		inputRef,
+		exportToExcel,
+		handleImport,
+	}
 }

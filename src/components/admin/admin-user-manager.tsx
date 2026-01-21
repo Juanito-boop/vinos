@@ -27,6 +27,12 @@ export function AdminUserManager() {
 	const [isLoading, setIsLoading] = useState(true)
 	const [searchTerm, setSearchTerm] = useState("")
 
+	useEffect(() => {
+		if (currentUser?.isAdmin) {
+			loadUsers()
+		}
+	}, [currentUser?.isAdmin])
+
 	// Verificar si el usuario actual es admin
 	if (!currentUser?.isAdmin) {
 		return (
@@ -44,19 +50,13 @@ export function AdminUserManager() {
 		)
 	}
 
-	useEffect(() => {
-		if (currentUser?.isAdmin) {
-			loadUsers()
-		}
-	}, [currentUser?.isAdmin])
-
 	const loadUsers = async () => {
 		try {
 			setIsLoading(true)
-			
+
 			// Usar la función RPC personalizada
 			const { data, error } = await supabase.rpc('get_users_for_admin')
-			
+
 			if (error) {
 				console.error('Error loading users:', error)
 				toast.error('Error al cargar usuarios: ' + error.message)
@@ -89,11 +89,11 @@ export function AdminUserManager() {
 				target_user_id: userId,
 				new_role: isAdmin ? 'admin' : 'user'
 			})
-			
+
 			if (error) {
 				throw error
 			}
-			
+
 			// Recargar usuarios para reflejar cambios
 			await loadUsers()
 			toast.success(`Usuario ${isAdmin ? 'promovido a administrador' : 'degradado a usuario'}`)
@@ -108,10 +108,10 @@ export function AdminUserManager() {
 	)
 
 	const isUserAdmin = (user: UserWithRole) => {
-		return user.is_admin || 
-					user.user_metadata?.role === 'admin' || 
-					user.user_metadata?.isAdmin === true ||
-					user.email === 'acevedojuanesteban.colombia@gmail.com'
+		return user.is_admin ||
+			user.user_metadata?.role === 'admin' ||
+			user.user_metadata?.isAdmin === true ||
+			user.email === 'acevedojuanesteban.colombia@gmail.com'
 	}
 
 	if (isLoading) {
@@ -163,7 +163,7 @@ export function AdminUserManager() {
 									</p>
 								</div>
 							</div>
-							
+
 							<div className="flex items-center gap-2">
 								{isUserAdmin(user) ? (
 									<Badge variant="default" className="bg-purple-600">
@@ -175,7 +175,7 @@ export function AdminUserManager() {
 										Usuario
 									</Badge>
 								)}
-								
+
 								{user.id !== currentUser?.id && (
 									<Button
 										size="sm"
@@ -202,7 +202,7 @@ export function AdminUserManager() {
 				{/* Información sobre la implementación */}
 				<div className="bg-green-50 p-4 rounded-lg">
 					<p className="text-sm text-green-800">
-						<strong>✅ Implementación completa:</strong> Esta gestión de usuarios usa funciones RPC 
+						<strong>✅ Implementación completa:</strong> Esta gestión de usuarios usa funciones RPC
 						personalizadas en Supabase que verifican permisos de administrador de forma segura.
 					</p>
 				</div>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag } from "lucide-react"
 import { formatPrice } from "@/utils/price"
+import Image from "next/image"
 
 interface CartViewProps {
 	onBack: () => void
@@ -63,7 +64,7 @@ function CheckoutQR(
 	return (
 		<div className="flex flex-col items-center justify-center min-h-[60vh]">
 			<h2 className="text-2xl font-bold mb-4">Escanea el QR para pagar</h2>
-			<img src="/qr-pago.jpg" alt="QR de pago" className="w-56 h-56 mb-4" />
+			<Image src="/qr-pago.jpg" alt="QR de pago" width={224} height={224} className="mb-4" />
 
 			{!whatsappSent ? (
 				<>
@@ -218,10 +219,12 @@ export function CartView({ onBack, wines }: CartViewProps) {
 											{/* Lado izquierdo: Imagen */}
 											<div className="w-20 h-24 bg-gray-50 rounded-xl flex-shrink-0 flex items-center justify-center p-2 border border-gray-100">
 												{wine.url_imagen && (
-													<img
+													<Image
 														src={wine.url_imagen}
 														alt={wine.nombre}
 														className="max-w-full max-h-full object-contain drop-shadow-sm"
+														width={80}
+														height={80}
 													/>
 												)}
 											</div>

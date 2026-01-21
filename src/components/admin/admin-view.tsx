@@ -8,6 +8,7 @@ import { SquarePen, Trash2 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import type { Consumibles, Wine } from '@/types';
 import EditConsumibleModal from "./edit-consumible-modal";
+import Image from "next/image";
 
 interface AdminViewProps {
   wines: Wine[]
@@ -87,7 +88,7 @@ export function AdminView({ wines }: AdminViewProps) {
 											{paginatedConsumibles.map((item, idx) => (
 												<tr key={item.id} className="hover:bg-red-50 bg-white">
 													<td className="px-6 py-4 text-center">
-														<img src={item.url_imagen} alt={item.nombre} className="w-16 h-16 object-cover rounded mx-auto border border-gray-200 shadow-sm" />
+														<Image src={item.url_imagen} alt={item.nombre} className="w-16 h-16 object-cover rounded mx-auto border border-gray-200 shadow-sm" width={300} height={300} />
 													</td>
 													<td className="px-6 py-4 text-center font-semibold text-gray-900">{item.nombre}</td>
 													<td className="px-6 py-4 text-center text-gray-700">{item.descripcion}</td>

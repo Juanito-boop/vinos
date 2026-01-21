@@ -112,14 +112,14 @@ export function StructuredData({ wines, type = "website", product }: StructuredD
 
 	const getData = () => {
 		switch (type) {
-			case "organization":
-				return getOrganizationData()
-			case "product":
-				return product ? getProductData(product) : null
-			case "breadcrumb":
-				return getBreadcrumbData()
-			default:
-				return getWebsiteData()
+		case "organization":
+			return getOrganizationData()
+		case "product":
+			return product ? getProductData(product) : null
+		case "breadcrumb":
+			return getBreadcrumbData()
+		default:
+			return getWebsiteData()
 		}
 	}
 
